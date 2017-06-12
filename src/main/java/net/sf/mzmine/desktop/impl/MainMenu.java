@@ -320,7 +320,7 @@ public class MainMenu extends JMenuBar implements ActionListener {
      * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
      */
     public void actionPerformed(ActionEvent e) {
-
+    	System.out.println("Action performed");
         Object src = e.getSource();
 
         MZmineRunnableModule module = moduleMenuItems.get(src);
@@ -351,11 +351,14 @@ public class MainMenu extends JMenuBar implements ActionListener {
             }
 
             logger.finest("Setting parameters for module " + module.getName());
+            System.out.println("Module name:"+module.getName());
             ExitCode exitCode = moduleParameters.showSetupDialog(MZmineCore
                     .getDesktop().getMainWindow(), true);
+            System.out.println("original class:"+moduleParameters.getClass());
             if (exitCode == ExitCode.OK) {
                 ParameterSet parametersCopy = moduleParameters
                         .cloneParameterSet();
+                System.out.println("copied class:"+parametersCopy.getClass());
                 logger.finest("Starting module " + module.getName()
                         + " with parameters " + parametersCopy);
                 ArrayList<Task> tasks = new ArrayList<Task>();

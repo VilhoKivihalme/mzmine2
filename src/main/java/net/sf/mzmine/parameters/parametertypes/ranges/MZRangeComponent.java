@@ -127,6 +127,11 @@ public class MZRangeComponent extends DoubleRangeComponent
         }
 
     }
+    public void fireAutorangeButton(){
+    		setAutoButton.doClick();
+    		
+    		System.out.println("NPE thrown for lack of GUI, autorange still set succesfully. I hope?. Hackers gonna hack.");
+    }
 
     @Override
     public void setEnabled(boolean enabled) {

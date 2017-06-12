@@ -51,6 +51,7 @@ public class MassDetectionModule implements MZmineProcessingModule {
     public ExitCode runModule(@Nonnull MZmineProject project,
             @Nonnull ParameterSet parameters, @Nonnull Collection<Task> tasks) {
 
+    	
         RawDataFile[] dataFiles = parameters
                 .getParameter(MassDetectionParameters.dataFiles).getValue()
                 .getMatchingRawDataFiles();
@@ -59,7 +60,7 @@ public class MassDetectionModule implements MZmineProcessingModule {
             Task newTask = new MassDetectionTask(dataFile, parameters);
             tasks.add(newTask);
         }
-
+        
         return ExitCode.OK;
 
     }

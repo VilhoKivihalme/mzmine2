@@ -50,7 +50,8 @@ public class CropFilterModule implements MZmineProcessingModule {
     @Nonnull
     public ExitCode runModule(@Nonnull MZmineProject project,
             @Nonnull ParameterSet parameters, @Nonnull Collection<Task> tasks) {
-
+    	System.out.println("Running module with:"+parameters.getClass());
+    	System.out.println("Parameters have this list:"+parameters.getParameters().getClass());
         for (RawDataFile dataFile : parameters
                 .getParameter(CropFilterParameters.dataFiles).getValue()
                 .getMatchingRawDataFiles()) {

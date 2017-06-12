@@ -149,7 +149,7 @@ public class ParameterSetupDialog extends JDialog
             if (!(p instanceof UserParameter))
                 continue;
             UserParameter up = (UserParameter) p;
-
+            System.out.println(up.getClass());
             JComponent comp = up.createEditingComponent();
             comp.setToolTipText(up.getDescription());
 
@@ -309,6 +309,7 @@ public class ParameterSetupDialog extends JDialog
      * preview components, for example.
      */
     protected void parametersChanged() {
+    	System.out.println("Parameters changed");
 
     }
 

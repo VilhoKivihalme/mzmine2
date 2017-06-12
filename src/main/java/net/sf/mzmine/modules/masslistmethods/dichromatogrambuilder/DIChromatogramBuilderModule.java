@@ -50,7 +50,7 @@ public class DIChromatogramBuilderModule implements MZmineProcessingModule {
     @Nonnull
     public ExitCode runModule(@Nonnull MZmineProject project,
             @Nonnull ParameterSet parameters, @Nonnull Collection<Task> tasks) {
-
+    	System.out.println("running DI");
         RawDataFile[] dataFiles = parameters
                 .getParameter(DIChromatogramBuilderParameters.dataFiles)
                 .getValue().getMatchingRawDataFiles();
