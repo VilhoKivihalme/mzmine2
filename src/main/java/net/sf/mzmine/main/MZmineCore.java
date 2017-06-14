@@ -274,122 +274,28 @@ public final class MZmineCore {
 	    else
 		System.exit(1);
 	}
-	try {
-		test();
-	} catch (InterruptedException e) {
-//		 TODO Auto-generated catch block
-		e.printStackTrace();
-	}
+	batchTest();
+
+    }
+    
+    
+    /**
+     * For testing the data
+     */
+    public static void batchTest(){
+    	System.out.println("entering batch mode test");
+    	 File batchFile = new File("C:/Users/Vilho/Desktop/batchmode.xml");
+    	 if ((!batchFile.exists()) || (!batchFile.canRead())) {
+    			logger.severe("Cannot read batch file " + batchFile);
+    			 System.out.println("exiting");
+    			System.exit(1);
+    		    }
+    	 BatchModeModule.runBatch(
+    			    projectManager.getCurrentProject(), batchFile);
+    	 System.out.println("done");
     }
 
-    /**
-     * This is a test method that loads automatically my data and does the processing for it
-     * ONLY TO BE USED DURING DEVELOPMENT TO FASTER/AUTOMATICALLY LOAD THE DATA.
-     * 
-     * @throws InterruptedException
-     */
-    public static void test() throws InterruptedException{
-    	File[] selectedFiles= {new File("C:/Users/Vilho/Desktop/test_data.RAW")};
-    	RawDataImportModule rm = new RawDataImportModule();
-    	Collection<Task> tasks = new ArrayList<Task>();
-   	    MZmineProject project = MZmineCore.getProjectManager()
-                   .getCurrentProject();
-   	    RawDataImportParameters r = new RawDataImportParameters();
-   	    r.getParameter(RawDataImportParameters.fileNames).setValue(selectedFiles);
-  	  
-   	    rm.runModule(project,r, tasks);
-   	    MZmineCore.getTaskController().addTasks(
-             tasks.toArray(new Task[0]));
-   	    
-   	    while(tasks.toArray(new Task[0])[0].getStatus()!=TaskStatus.FINISHED){
-   	    	Thread.sleep(100);
-   	    	
-   	    }
-   	    System.out.println("data loaded");
-   	    
-   	    CropFilterModule cfm = new CropFilterModule();
-   	    tasks = new ArrayList<Task>();
-   	    
-   	    CropFilterParameters cfp = new CropFilterParameters();
-   	    RawDataFilesSelection rf =  new RawDataFilesSelection(RawDataFilesSelectionType.NAME_PATTERN);
-//   	    ScanSelectionParameter sc =new ScanSelection();
-   	    Range<Double> ran = Range.closed(new Double("0.1"), new Double("0.3"));
-   	  
-   	    MZRangeComponent mz = new MZRangeComponent();
-   	    
-   	    /*
-   	     * This causes NPE, but works. Auto range is set with this, but the NPE is thrown because a GUI component
-   	     * is missing and this is triggered without opening the GUI.
-   	     * This however should work, because:
-   	     * -when selecting the crop filter again, the range used last time is saved there.
-   	     * -opening a resulted scan after this is used shows the correct autorange.
-   	     * -setting a random range manually, then exiting the program, the same range is there again,
-   	     *  but changes to correct autorange after using this
-   	     *  
-   	     *  Absolutely horrible
-   	     *  
-   	     *  EDIT: apparently sets the autorange wrong within accuracy of 0.01. TODO: fix
-   	     */
-   	 	mz.fireAutorangeButton(); 
-   	 	
-   	   
-   	 	
-   	 	System.out.println("autorange:"+mz.getValue());
-   	 
-   	    rf.setNamePattern("test_data*");
-   	    cfp.getParameter(CropFilterParameters.dataFiles).setValue(rf);
-   	 
-   	    cfp.getParameter(CropFilterParameters.mzRange).setValue(mz.getValue());
-   	    cfp.getParameter(CropFilterParameters.scanSelection).setValue(new ScanSelection(ran,1));
-   	    cfm.runModule(project, cfp, tasks);
-   	    MZmineCore.getTaskController().addTasks(
-             tasks.toArray(new Task[0]));
-   	    try{
-	   	    while(tasks.toArray(new Task[0])[0].getStatus()!=TaskStatus.FINISHED){
-		    	Thread.sleep(100);
-		    	
-		    }
-   	    }catch(Exception e){
-   	    	System.out.println("Possibly no tasks added");
-   	    }
-   	    System.out.println("Range filtered:"+ mz.getValue());
-   	    MassDetectionModule mass = new MassDetectionModule();
-   	    
-   	    tasks = new ArrayList<Task>();
-   	    MassDetectionParameters mp = new MassDetectionParameters();
-   	    RawDataFilesSelection rawdata =  new RawDataFilesSelection(RawDataFilesSelectionType.NAME_PATTERN);
-   	    rawdata.setNamePattern("*filtered");
-   	    mp.getParameter(MassDetectionParameters.dataFiles).setValue(rawdata);
-   	    
-//   	    mp.getParameter(MassDetectionParameters.massDetector).setValue();
-   	    mass.runModule(project, mp, tasks);
-   	   MZmineCore.getTaskController().addTasks(
-               tasks.toArray(new Task[0]));
-   	    while(tasks.toArray(new Task[0])[0].getStatus()!=TaskStatus.FINISHED){
-	    	Thread.sleep(100);
-//	    	System.out.println(tasks.toArray(new Task[0])[0].getStatus());
-	    }
-   	    System.out.println("masses detected");
-   	    
-   	    tasks = new ArrayList<Task>();
-   	    DIChromatogramBuilderModule dic = new DIChromatogramBuilderModule();
-   	    
-   	    DIChromatogramBuilderParameters par =new DIChromatogramBuilderParameters();
-   	    
-   	    par.getParameter(DIChromatogramBuilderParameters.dataFiles).setValue(rawdata);
-   	    dic.runModule(project, par, tasks);
-   	    MZmineCore.getTaskController().addTasks(
-             tasks.toArray(new Task[0]));
- 	    while(tasks.toArray(new Task[0])[0].getStatus()!=TaskStatus.FINISHED){
-	    	Thread.sleep(100);
-//	    	System.out.println(tasks.toArray(new Task[0])[0].getStatus());
-	    }
-   	    System.out.println("Chromatograms built!");
-   	    
-   	    MainPanel main = ((MainWindow)desktop.getMainWindow()).getMainPanel();
-//   	   System.out.println( main.getPeakListTree().getVisibleRowCount());
-   	    
-    }
+   
     
     @Nonnull
     public static TaskController getTaskController() {
