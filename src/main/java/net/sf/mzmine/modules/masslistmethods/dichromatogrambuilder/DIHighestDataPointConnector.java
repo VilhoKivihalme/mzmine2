@@ -43,8 +43,8 @@ public class DIHighestDataPointConnector {
     // Mapping of last data point m/z --> chromatogram
     private Set<DIChromatogram> buildingChromatograms;
 
-    public DIHighestDataPointConnector(RawDataFile dataFile, int allScanNumbers[],
-            double minimumTimeSpan, double minimumHeight,
+    public DIHighestDataPointConnector(RawDataFile dataFile,
+            int allScanNumbers[], double minimumTimeSpan, double minimumHeight,
             MZTolerance mzTolerance) {
 
         this.mzTolerance = mzTolerance;
@@ -52,6 +52,9 @@ public class DIHighestDataPointConnector {
         this.minimumTimeSpan = minimumTimeSpan;
         this.dataFile = dataFile;
         this.allScanNumbers = allScanNumbers;
+        // for (int i = 0; i < allScanNumbers.length; i++) {
+        // System.out.println(allScanNumbers[i]);
+        // }
 
         // We use LinkedHashSet to maintain a reproducible ordering. If we use
         // plain HashSet, the resulting peak list row IDs will have different
@@ -62,6 +65,7 @@ public class DIHighestDataPointConnector {
 
     public void addScan(int scanNumber, DataPoint mzValues[]) {
 
+        // System.out.println("Added scan " + scanNumber);
         // Sort m/z peaks by descending intensity
         Arrays.sort(mzValues, new DataPointSorter(SortingProperty.Intensity,
                 SortingDirection.Descending));
@@ -71,11 +75,12 @@ public class DIHighestDataPointConnector {
 
         // TODO: these two nested cycles should be optimized for speed
         for (DataPoint mzPeak : mzValues) {
-
+            // System.out.println(mzPeak);
             // Search for best chromatogram, which has highest last data point
             DIChromatogram bestChromatogram = null;
 
             for (DIChromatogram testChrom : buildingChromatograms) {
+                // System.out.println(testChrom);
 
                 DataPoint lastMzPeak = testChrom.getLastMzPeak();
                 Range<Double> toleranceRange = mzTolerance
@@ -85,6 +90,7 @@ public class DIHighestDataPointConnector {
                             .getIntensity() > bestChromatogram.getLastMzPeak()
                                     .getIntensity())) {
                         bestChromatogram = testChrom;
+
                     }
                 }
 
@@ -93,7 +99,7 @@ public class DIHighestDataPointConnector {
             // If we found best chromatogram, check if it is already connected.
             // In such case, we may discard this mass and continue. If we
             // haven't found a chromatogram, we may create a new one.
-            if (bestChromatogram != null) { 
+            if (bestChromatogram != null) {
                 if (connectedChromatograms.contains(bestChromatogram)) {
                     continue;
                 }
@@ -148,7 +154,8 @@ public class DIHighestDataPointConnector {
         // Iterate through current chromatograms and remove those which do not
         // contain any committed segment nor long-enough building segment
 
-        Iterator<DIChromatogram> chromIterator = buildingChromatograms.iterator();
+        Iterator<DIChromatogram> chromIterator = buildingChromatograms
+                .iterator();
         while (chromIterator.hasNext()) {
 
             DIChromatogram chromatogram = chromIterator.next();
@@ -158,17 +165,21 @@ public class DIHighestDataPointConnector {
                 chromatogram.finishChromatogram();
             } else {
                 if (chromatogram.getNumberOfCommittedSegments() == 0) {
+                    // System.out.println("removing " +
+                    // chromIterator.toString());
                     chromIterator.remove();
                     continue;
                 } else {
+
+                    // System.out.println("removing segment");
                     chromatogram.removeBuildingSegment();
                     chromatogram.finishChromatogram();
                 }
             }
 
             // Remove chromatograms smaller then minimum height
-            if (chromatogram.getHeight() < minimumHeight)
-                chromIterator.remove();
+            // if (chromatogram.getHeight() < minimumHeight)
+            // chromIterator.remove();
 
         }
 

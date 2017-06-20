@@ -64,8 +64,8 @@ public class DIChromatogramBuilderTask extends AbstractTask {
      * @param dataFile
      * @param parameters
      */
-    public DIChromatogramBuilderTask(MZmineProject project, RawDataFile dataFile,
-            ParameterSet parameters) {
+    public DIChromatogramBuilderTask(MZmineProject project,
+            RawDataFile dataFile, ParameterSet parameters) {
 
         this.project = project;
         this.dataFile = dataFile;
@@ -87,7 +87,8 @@ public class DIChromatogramBuilderTask extends AbstractTask {
                 .getValue();
 
         this.suffix = parameters
-                .getParameter(DIChromatogramBuilderParameters.suffix).getValue();
+                .getParameter(DIChromatogramBuilderParameters.suffix)
+                .getValue();
 
     }
 
@@ -150,7 +151,7 @@ public class DIChromatogramBuilderTask extends AbstractTask {
                 mzTolerance);
 
         for (Scan scan : scans) {
-
+            logger.info("Processing a scan " + scan.getScanNumber());
             if (isCanceled())
                 return;
 
@@ -181,7 +182,7 @@ public class DIChromatogramBuilderTask extends AbstractTask {
         // Sort the final chromatograms by m/z
         Arrays.sort(chromatograms,
                 new PeakSorter(SortingProperty.MZ, SortingDirection.Ascending));
-
+        System.out.println(chromatograms.length);
         // Add the chromatograms to the new peak list
         for (Feature finishedPeak : chromatograms) {
             SimplePeakListRow newRow = new SimplePeakListRow(newPeakID);

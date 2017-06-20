@@ -43,9 +43,9 @@ import net.sf.mzmine.util.ScanUtils;
  * Chromatogram implementing ChromatographicPeak.
  */
 public class DIChromatogram implements Feature {
-    
+
     private SimplePeakInformation peakInfo;
-    
+
     // Data file of this chromatogram
     private RawDataFile dataFile;
 
@@ -84,7 +84,7 @@ public class DIChromatogram implements Feature {
 
     private final int scanNumbers[];
 
-    public void outputChromToFile(){
+    public void outputChromToFile() {
         System.out.println("does nothing");
     }
 
@@ -203,7 +203,7 @@ public class DIChromatogram implements Feature {
 
         int allScanNumbers[] = Ints.toArray(dataPointsMap.keySet());
         Arrays.sort(allScanNumbers);
-
+        System.out.println("Scan numbers " + allScanNumbers.length);
         // Calculate median m/z
         double allMzValues[] = new double[allScanNumbers.length];
         for (int i = 0; i < allScanNumbers.length; i++) {
@@ -352,10 +352,12 @@ public class DIChromatogram implements Feature {
     public void setAsymmetryFactor(Double af) {
         this.af = af;
     }
-    public void setPeakInformation(SimplePeakInformation peakInfoIn){
+
+    public void setPeakInformation(SimplePeakInformation peakInfoIn) {
         this.peakInfo = peakInfoIn;
     }
-    public SimplePeakInformation getPeakInformation(){
+
+    public SimplePeakInformation getPeakInformation() {
         return peakInfo;
     }
 
