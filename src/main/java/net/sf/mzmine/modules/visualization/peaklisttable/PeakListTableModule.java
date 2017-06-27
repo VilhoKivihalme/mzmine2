@@ -36,8 +36,12 @@ public class PeakListTableModule implements MZmineModule {
     }
 
     public static void showNewPeakListVisualizerWindow(PeakList peakList) {
+    	System.out.println("Opening peak list table");
 	ParameterSet parameters = MZmineCore.getConfiguration()
 		.getModuleParameters(PeakListTableModule.class);
+	System.out.println(parameters+ " " +parameters.getClass());
+	System.out.println(peakList.getClass()+" "+peakList);
+	System.out.println("Showing new window:");
 	final PeakListTableWindow window = new PeakListTableWindow(peakList,
 		parameters);
 	window.setVisible(true);

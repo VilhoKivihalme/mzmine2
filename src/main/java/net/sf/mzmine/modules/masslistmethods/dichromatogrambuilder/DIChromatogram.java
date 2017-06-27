@@ -84,6 +84,17 @@ public class DIChromatogram implements Feature {
 
     private final int scanNumbers[];
 
+    private double avgHeight;
+    
+    public void test(){
+    	for(Integer d : dataPointsMap.keySet()){
+    		System.out.println("Datapoints:"+d+" "+ dataPointsMap.get(d));
+    	}
+    	for(Integer i : scanNumbers){
+    		System.out.print(i+" ");
+    	}
+    	System.out.println();
+    }
     public void outputChromToFile() {
         System.out.println("does nothing");
     }
@@ -213,6 +224,7 @@ public class DIChromatogram implements Feature {
 
         // Update raw data point ranges, height, rt and representative scan
         height = Double.MIN_VALUE;
+        double sum=0.0;
         for (int i = 0; i < allScanNumbers.length; i++) {
 
             DataPoint mzPeak = dataPointsMap.get(allScanNumbers[i]);
@@ -239,8 +251,9 @@ public class DIChromatogram implements Feature {
                 rt = dataFile.getScan(allScanNumbers[i]).getRetentionTime();
                 representativeScan = allScanNumbers[i];
             }
+            sum+=mzPeak.getIntensity();
         }
-
+        avgHeight=sum/allScanNumbers.length;
         // Update area
         area = 0;
         for (int i = 1; i < allScanNumbers.length; i++) {
@@ -256,6 +269,8 @@ public class DIChromatogram implements Feature {
             area += (currentRT - previousRT) * (currentHeight + previousHeight)
                     / 2;
         }
+        if(getMZ()==164.14329528808594)
+        System.out.println(allScanNumbers.length+" " +area);
 
         // Update fragment scan
         fragmentScan = ScanUtils.findBestFragmentScan(dataFile,
@@ -287,7 +302,7 @@ public class DIChromatogram implements Feature {
         // Discard the fields we don't need anymore
         buildingSegment = null;
         lastMzPeak = null;
-
+        System.out.println("Average height:"+ avgHeight);
     }
 
     public double getBuildingSegmentLength() {

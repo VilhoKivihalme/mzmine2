@@ -75,16 +75,16 @@ public class DIHighestDataPointConnector {
 
         // TODO: these two nested cycles should be optimized for speed
         for (DataPoint mzPeak : mzValues) {
-            // System.out.println(mzPeak);
+        	
             // Search for best chromatogram, which has highest last data point
             DIChromatogram bestChromatogram = null;
-
+//            System.out.println("CURRENT SIZE:"+connectedChromatograms.size()+" " +buildingChromatograms.size());
             for (DIChromatogram testChrom : buildingChromatograms) {
                 // System.out.println(testChrom);
 
                 DataPoint lastMzPeak = testChrom.getLastMzPeak();
-                Range<Double> toleranceRange = mzTolerance
-                        .getToleranceRange(lastMzPeak.getMZ());
+                Range<Double> toleranceRange = mzTolerance.getToleranceRange(lastMzPeak.getMZ());
+                
                 if (toleranceRange.contains(mzPeak.getMZ())) {
                     if ((bestChromatogram == null) || (testChrom.getLastMzPeak()
                             .getIntensity() > bestChromatogram.getLastMzPeak()

@@ -72,7 +72,11 @@ public class TICVisualizerModule implements MZmineRunnableModule {
                 .getParameter(TICVisualizerParameters.PLOT_TYPE).getValue();
         final Feature[] selectionPeaks = parameters
                 .getParameter(TICVisualizerParameters.PEAKS).getValue();
-
+        System.out.println("RUNNING A TIC VISUALIZER");
+        System.out.println(selectionPeaks[0].getClass());
+        for(Feature f : selectionPeaks){
+        	System.out.println("A peak:" +f);
+        }
         // Add the window to the desktop only if we actually have any raw
         // data to show.
         boolean weHaveData = false;

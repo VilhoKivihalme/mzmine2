@@ -65,7 +65,7 @@ public class PeakXICComponent extends JComponent {
      *            Picked peak to plot
      */
     public PeakXICComponent(Feature peak, double maxIntensity) {
-
+    
         this.peak = peak;
 
         // find data boundaries
@@ -81,9 +81,8 @@ public class PeakXICComponent extends JComponent {
     }
 
     public void paint(Graphics g) {
-
+    	
         super.paint(g);
-
         // use Graphics2D for antialiasing
         Graphics2D g2 = (Graphics2D) g;
 

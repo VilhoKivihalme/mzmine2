@@ -33,6 +33,7 @@ import net.sf.mzmine.datamodel.PeakInformation;
 import net.sf.mzmine.datamodel.PeakListRow;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.main.MZmineCore;
+import net.sf.mzmine.modules.masslistmethods.dichromatogrambuilder.DIChromatogram;
 import net.sf.mzmine.util.PeakSorter;
 import net.sf.mzmine.util.SortingDirection;
 import net.sf.mzmine.util.SortingProperty;
@@ -100,7 +101,13 @@ public class SimplePeakListRow implements PeakListRow {
     }
 
     public synchronized void addPeak(RawDataFile rawData, Feature peak) {
-
+//    	System.out.println(peak.getMZ());
+    	if(peak.getMZ()==164.14329528808594){
+    		System.out.println("target");
+    		System.out.println(peak.getClass());
+    	((DIChromatogram)peak).test();
+    	System.out.println(((DIChromatogram)peak).getArea());
+    	}
 
 	if (peak == null)
 	    throw new IllegalArgumentException(

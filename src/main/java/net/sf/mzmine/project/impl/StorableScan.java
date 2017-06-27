@@ -19,7 +19,10 @@
 
 package net.sf.mzmine.project.impl;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
@@ -27,6 +30,8 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 import javax.swing.SwingUtilities;
+
+import com.google.common.collect.Range;
 
 import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.MassList;
@@ -37,8 +42,6 @@ import net.sf.mzmine.datamodel.Scan;
 import net.sf.mzmine.desktop.impl.projecttree.RawDataTreeModel;
 import net.sf.mzmine.main.MZmineCore;
 import net.sf.mzmine.util.ScanUtils;
-
-import com.google.common.collect.Range;
 
 /**
  * Implementation of the Scan interface which stores raw data points in a
@@ -136,9 +139,20 @@ public class StorableScan implements Scan {
      */
     public @Nonnull DataPoint[] getDataPointsByMass(
 	    @Nonnull Range<Double> mzRange) {
-
 	DataPoint dataPoints[] = getDataPoints();
 
+	System.out.println("ALL DATAPOINTS "+dataPoints.length+" "+mzRange);
+/*	try {
+		PrintWriter pw = new PrintWriter(new File("C:/Users/Vilho/Desktop/datapoints/"+this.scanNumber+" rt-" +this.retentionTime+".txt"));
+		for(DataPoint d : dataPoints){
+			pw.println(d);
+		}
+		pw.close();
+	} catch (FileNotFoundException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}*/
+	
 	int startIndex, endIndex;
 	for (startIndex = 0; startIndex < dataPoints.length; startIndex++) {
 	    if (dataPoints[startIndex].getMZ() >= mzRange.lowerEndpoint()) {
@@ -148,10 +162,13 @@ public class StorableScan implements Scan {
 
 	for (endIndex = startIndex; endIndex < dataPoints.length; endIndex++) {
 	    if (dataPoints[endIndex].getMZ() > mzRange.upperEndpoint()) {
+	    	
 		break;
 	    }
 	}
-
+	if(endIndex-startIndex<=0){
+		endIndex++;
+	}
 	DataPoint pointsWithinRange[] = new DataPoint[endIndex - startIndex];
 
 	// Copy the relevant points

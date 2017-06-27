@@ -343,23 +343,27 @@ public class TICDataSet extends AbstractXYZDataset implements Task {
     }
 
     private void calculateValues() {
+    	System.out.println("heyi'm here!");
 
         // Determine plot type (now done from constructor).
         final TICPlotType plotType = this.plotType;
 
         // Process each scan.
+        System.out.println(mzRange);
         for (int index = 0; status != TaskStatus.CANCELED && index < totalScans; index++) {
 
             // Current scan.
             final Scan scan = scans[index];
-
+            System.out.println("scan range" +scan.getDataPointMZRange()+ " " +mzRange);
             // Determine base peak value.
-            final DataPoint basePeak = mzRange.encloses(scan
-                    .getDataPointMZRange()) ? scan.getHighestDataPoint()
-                    : ScanUtils.findBasePeak(scan, mzRange);
+            final DataPoint basePeak = mzRange.encloses(scan.getDataPointMZRange()) ? scan.getHighestDataPoint() : ScanUtils.findBasePeak(scan, mzRange);
+                
             if (basePeak != null) {
 
                 basePeakValues[index] = basePeak.getMZ();
+                System.out.println("a peak:"+ basePeakValues[index]);
+            }else{
+                System.out.println("a different peak:"+ null);
             }
 
             // Determine peak intensity.

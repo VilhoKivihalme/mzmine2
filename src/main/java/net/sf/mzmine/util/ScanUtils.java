@@ -104,16 +104,30 @@ public class ScanUtils {
      */
     public static @Nonnull DataPoint findBasePeak(@Nonnull Scan scan,
 	    @Nonnull Range<Double> mzRange) {
-
-	DataPoint dataPoints[] = scan.getDataPointsByMass(mzRange);
+    	System.out.println(scan.getClass());
+    	System.out.println("Getting points by mass: " + mzRange);
+    	Range<Double> r = Range.closed(mzRange.lowerEndpoint(), mzRange.upperEndpoint());
+    	System.out.println(scan.getClass());
+	DataPoint dataPoints[] = scan.getDataPointsByMass(r);
+	/*
+	int iterations = 0;
+	double interval =0.00000005;
+	while(dataPoints.length==0){
+		 r = Range.closed(r.lowerEndpoint()-interval, r.upperEndpoint()+interval);
+		 dataPoints = scan.getDataPointsByMass(r);
+		 iterations++;
+	}*/
+//	System.out.println("Found points:" + dataPoints.length + " after " + iterations +" iterations");
+	System.out.println("Final range: " +r);
+	System.out.println("Orig. range: "+mzRange);
 	DataPoint basePeak = null;
 
 	for (DataPoint dp : dataPoints) {
-	    if ((basePeak == null)
-		    || (dp.getIntensity() > basePeak.getIntensity()))
+		//System.out.println("DP:"+dp);
+	    if ((basePeak == null) || (dp.getIntensity() > basePeak.getIntensity()))
 		basePeak = dp;
 	}
-
+	System.out.println("base peak:" + basePeak);
 	return basePeak;
     }
 

@@ -33,7 +33,9 @@ import javax.swing.JTable.PrintMode;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import net.sf.mzmine.datamodel.Feature;
 import net.sf.mzmine.datamodel.PeakList;
+import net.sf.mzmine.datamodel.PeakListRow;
 import net.sf.mzmine.desktop.impl.WindowsMenu;
 import net.sf.mzmine.main.MZmineCore;
 import net.sf.mzmine.modules.visualization.peaklisttable.table.PeakListTable;
@@ -61,9 +63,17 @@ public class PeakListTableWindow extends JFrame implements ActionListener {
     PeakListTableWindow(PeakList peakList, ParameterSet parameters) {
 
 	super("Peak list: " + peakList.getName());
-
+	System.out.println(peakList+ " "+peakList.getClass());
 	this.parameters = parameters;
-
+	for(PeakListRow f: peakList.getRows()){
+		for(Feature a : f.getPeaks()){
+			
+			System.out.println(a+ " "+ a.getClass());
+			for(Integer i : a.getScanNumbers()){
+				System.out.println(a.getDataPoint(i));
+			}
+		}
+	}
 	setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 	setBackground(Color.white);
 

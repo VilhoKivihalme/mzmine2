@@ -152,6 +152,7 @@ public class DIChromatogramBuilderTask extends AbstractTask {
 
         for (Scan scan : scans) {
             logger.info("Processing a scan " + scan.getScanNumber());
+            System.out.println(scan.getRetentionTime());
             if (isCanceled())
                 return;
 
@@ -172,7 +173,7 @@ public class DIChromatogramBuilderTask extends AbstractTask {
                         + scan.getScanNumber() + " of file " + dataFile);
                 return;
             }
-
+            
             massConnector.addScan(scan.getScanNumber(), mzValues);
             processedScans++;
         }
@@ -195,7 +196,7 @@ public class DIChromatogramBuilderTask extends AbstractTask {
         project.addPeakList(newPeakList);
 
         // Add quality parameters to peaks
-        QualityParameters.calculateQualityParameters(newPeakList);
+        //QualityParameters.calculateQualityParameters(newPeakList);
 
         setStatus(TaskStatus.FINISHED);
 

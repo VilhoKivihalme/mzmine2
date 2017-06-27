@@ -286,7 +286,7 @@ public class TICVisualizerWindow extends JFrame implements ActionListener {
 
         // update plot title
         ticPlot.setTitle(mainTitle.toString(), subTitle.toString());
-
+        System.out.println(mainTitle.toString()+" "+subTitle.toString());
     }
 
     /**
