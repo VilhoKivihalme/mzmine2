@@ -20,6 +20,7 @@
 package net.sf.mzmine.modules.masslistmethods.dichromatogrambuilder;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map.Entry;
 import java.util.Vector;
@@ -85,18 +86,23 @@ public class DIChromatogram implements Feature {
     private final int scanNumbers[];
 
     private double avgHeight;
-    
-    public void test(){
-    	for(Integer d : dataPointsMap.keySet()){
-    		System.out.println("Datapoints:"+d+" "+ dataPointsMap.get(d));
-    	}
-    	for(Integer i : scanNumbers){
-    		System.out.print(i+" ");
-    	}
-    	System.out.println();
+
+    public void test() {
+        for (Integer d : dataPointsMap.keySet()) {
+            System.out.println("Datapoints:" + d + " " + dataPointsMap.get(d));
+        }
+        for (Integer i : scanNumbers) {
+            System.out.print(i + " ");
+        }
+        System.out.println();
     }
+
     public void outputChromToFile() {
         System.out.println("does nothing");
+    }
+
+    public Collection<DataPoint> getAllDatapoints() {
+        return dataPointsMap.values();
     }
 
     /**
@@ -214,7 +220,6 @@ public class DIChromatogram implements Feature {
 
         int allScanNumbers[] = Ints.toArray(dataPointsMap.keySet());
         Arrays.sort(allScanNumbers);
-        System.out.println("Scan numbers " + allScanNumbers.length);
         // Calculate median m/z
         double allMzValues[] = new double[allScanNumbers.length];
         for (int i = 0; i < allScanNumbers.length; i++) {
@@ -224,7 +229,7 @@ public class DIChromatogram implements Feature {
 
         // Update raw data point ranges, height, rt and representative scan
         height = Double.MIN_VALUE;
-        double sum=0.0;
+        double sum = 0.0;
         for (int i = 0; i < allScanNumbers.length; i++) {
 
             DataPoint mzPeak = dataPointsMap.get(allScanNumbers[i]);
@@ -251,9 +256,9 @@ public class DIChromatogram implements Feature {
                 rt = dataFile.getScan(allScanNumbers[i]).getRetentionTime();
                 representativeScan = allScanNumbers[i];
             }
-            sum+=mzPeak.getIntensity();
+            sum += mzPeak.getIntensity();
         }
-        avgHeight=sum/allScanNumbers.length;
+        avgHeight = sum / allScanNumbers.length;
         // Update area
         area = 0;
         for (int i = 1; i < allScanNumbers.length; i++) {
@@ -269,8 +274,6 @@ public class DIChromatogram implements Feature {
             area += (currentRT - previousRT) * (currentHeight + previousHeight)
                     / 2;
         }
-        if(getMZ()==164.14329528808594)
-        System.out.println(allScanNumbers.length+" " +area);
 
         // Update fragment scan
         fragmentScan = ScanUtils.findBestFragmentScan(dataFile,
@@ -302,7 +305,6 @@ public class DIChromatogram implements Feature {
         // Discard the fields we don't need anymore
         buildingSegment = null;
         lastMzPeak = null;
-        System.out.println("Average height:"+ avgHeight);
     }
 
     public double getBuildingSegmentLength() {
@@ -332,8 +334,23 @@ public class DIChromatogram implements Feature {
 
     public void addDataPointsFromChromatogram(DIChromatogram ch) {
         for (Entry<Integer, DataPoint> dp : ch.dataPointsMap.entrySet()) {
+            System.out.println(dp.getKey() + " " + dp.getValue());
             addMzPeak(dp.getKey(), dp.getValue());
         }
+    }
+
+    public static DIChromatogram merge(DIChromatogram di1, DIChromatogram di2) {
+
+        DIChromatogram merged = new DIChromatogram(di1.dataFile,
+                di1.scanNumbers);
+
+        for (Integer i : di1.dataPointsMap.keySet()) {
+            merged.addMzPeak(i, di1.dataPointsMap.get(i));
+        }
+        for (Integer i : di2.dataPointsMap.keySet()) {
+            merged.addMzPeak(i, di2.dataPointsMap.get(i));
+        }
+        return merged;
     }
 
     public int getCharge() {

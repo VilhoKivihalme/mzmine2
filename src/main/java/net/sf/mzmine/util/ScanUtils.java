@@ -30,16 +30,16 @@ import java.util.Arrays;
 
 import javax.annotation.Nonnull;
 
+import org.apache.axis.encoding.Base64;
+
+import com.google.common.collect.Range;
+
 import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.MassSpectrumType;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.Scan;
 import net.sf.mzmine.datamodel.impl.SimpleDataPoint;
 import net.sf.mzmine.main.MZmineCore;
-
-import org.apache.axis.encoding.Base64;
-
-import com.google.common.collect.Range;
 
 /**
  * Scan related utilities
@@ -55,40 +55,39 @@ public class ScanUtils {
      * @return String representation of the scan
      */
     public static @Nonnull String scanToString(@Nonnull Scan scan) {
-	StringBuffer buf = new StringBuffer();
-	Format rtFormat = MZmineCore.getConfiguration().getRTFormat();
-	Format mzFormat = MZmineCore.getConfiguration().getMZFormat();
-	buf.append("#");
-	buf.append(scan.getScanNumber());
-	buf.append(" @");
-	buf.append(rtFormat.format(scan.getRetentionTime()));
-	buf.append(" MS");
-	buf.append(scan.getMSLevel());
-	if (scan.getMSLevel() > 1)
-	    buf.append(" (" + mzFormat.format(scan.getPrecursorMZ()) + ")");
-	switch (scan.getSpectrumType()) {
-	case CENTROIDED:
-	    buf.append(" c");
-	    break;
-	case PROFILE:
-	    buf.append(" p");
-	    break;
-	case THRESHOLDED:
-	    buf.append(" t");
-	    break;
-	}
+        StringBuffer buf = new StringBuffer();
+        Format rtFormat = MZmineCore.getConfiguration().getRTFormat();
+        Format mzFormat = MZmineCore.getConfiguration().getMZFormat();
+        buf.append("#");
+        buf.append(scan.getScanNumber());
+        buf.append(" @");
+        buf.append(rtFormat.format(scan.getRetentionTime()));
+        buf.append(" MS");
+        buf.append(scan.getMSLevel());
+        if (scan.getMSLevel() > 1)
+            buf.append(" (" + mzFormat.format(scan.getPrecursorMZ()) + ")");
+        switch (scan.getSpectrumType()) {
+        case CENTROIDED:
+            buf.append(" c");
+            break;
+        case PROFILE:
+            buf.append(" p");
+            break;
+        case THRESHOLDED:
+            buf.append(" t");
+            break;
+        }
 
-	buf.append(" ");
-	buf.append(scan.getPolarity().asSingleChar());
+        buf.append(" ");
+        buf.append(scan.getPolarity().asSingleChar());
 
-	/*if ((scan.getScanDefinition() != null)
-		&& (scan.getScanDefinition().length() > 0)) {
-	    buf.append(" (");
-	    buf.append(scan.getScanDefinition());
-	    buf.append(")");
-	}*/
+        /*
+         * if ((scan.getScanDefinition() != null) &&
+         * (scan.getScanDefinition().length() > 0)) { buf.append(" (");
+         * buf.append(scan.getScanDefinition()); buf.append(")"); }
+         */
 
-	return buf.toString();
+        return buf.toString();
     }
 
     /**
@@ -103,32 +102,27 @@ public class ScanUtils {
      * @return double[2] containing base peak m/z and intensity
      */
     public static @Nonnull DataPoint findBasePeak(@Nonnull Scan scan,
-	    @Nonnull Range<Double> mzRange) {
-    	System.out.println(scan.getClass());
-    	System.out.println("Getting points by mass: " + mzRange);
-    	Range<Double> r = Range.closed(mzRange.lowerEndpoint(), mzRange.upperEndpoint());
-    	System.out.println(scan.getClass());
-	DataPoint dataPoints[] = scan.getDataPointsByMass(r);
-	/*
-	int iterations = 0;
-	double interval =0.00000005;
-	while(dataPoints.length==0){
-		 r = Range.closed(r.lowerEndpoint()-interval, r.upperEndpoint()+interval);
-		 dataPoints = scan.getDataPointsByMass(r);
-		 iterations++;
-	}*/
-//	System.out.println("Found points:" + dataPoints.length + " after " + iterations +" iterations");
-	System.out.println("Final range: " +r);
-	System.out.println("Orig. range: "+mzRange);
-	DataPoint basePeak = null;
+            @Nonnull Range<Double> mzRange) {
+        Range<Double> r = Range.closed(mzRange.lowerEndpoint(),
+                mzRange.upperEndpoint());
+        DataPoint dataPoints[] = scan.getDataPointsByMass(r);
+        /*
+         * int iterations = 0; double interval =0.00000005;
+         * while(dataPoints.length==0){ r =
+         * Range.closed(r.lowerEndpoint()-interval, r.upperEndpoint()+interval);
+         * dataPoints = scan.getDataPointsByMass(r); iterations++; }
+         */
+        // System.out.println("Found points:" + dataPoints.length + " after " +
+        // iterations +" iterations");
+        DataPoint basePeak = null;
 
-	for (DataPoint dp : dataPoints) {
-		//System.out.println("DP:"+dp);
-	    if ((basePeak == null) || (dp.getIntensity() > basePeak.getIntensity()))
-		basePeak = dp;
-	}
-	System.out.println("base peak:" + basePeak);
-	return basePeak;
+        for (DataPoint dp : dataPoints) {
+            // System.out.println("DP:"+dp);
+            if ((basePeak == null)
+                    || (dp.getIntensity() > basePeak.getIntensity()))
+                basePeak = dp;
+        }
+        return basePeak;
     }
 
     /**
@@ -142,11 +136,11 @@ public class ScanUtils {
      */
     public static double calculateTIC(Scan scan, Range<Double> mzRange) {
 
-	double tic = 0.0;
-	for (final DataPoint dataPoint : scan.getDataPointsByMass(mzRange)) {
-	    tic += dataPoint.getIntensity();
-	}
-	return tic;
+        double tic = 0.0;
+        for (final DataPoint dataPoint : scan.getDataPointsByMass(mzRange)) {
+            tic += dataPoint.getIntensity();
+        }
+        return tic;
     }
 
     /**
@@ -154,13 +148,13 @@ public class ScanUtils {
      * 
      */
     public static DataPoint[] selectDataPointsByMass(DataPoint dataPoints[],
-	    Range<Double> mzRange) {
-	ArrayList<DataPoint> goodPoints = new ArrayList<DataPoint>();
-	for (DataPoint dp : dataPoints) {
-	    if (mzRange.contains(dp.getMZ()))
-		goodPoints.add(dp);
-	}
-	return goodPoints.toArray(new DataPoint[0]);
+            Range<Double> mzRange) {
+        ArrayList<DataPoint> goodPoints = new ArrayList<DataPoint>();
+        for (DataPoint dp : dataPoints) {
+            if (mzRange.contains(dp.getMZ()))
+                goodPoints.add(dp);
+        }
+        return goodPoints.toArray(new DataPoint[0]);
     }
 
     /**
@@ -168,20 +162,20 @@ public class ScanUtils {
      * 
      */
     public static DataPoint[] selectDataPointsOverIntensity(
-	    DataPoint dataPoints[], double minIntensity) {
-	ArrayList<DataPoint> goodPoints = new ArrayList<DataPoint>();
-	for (DataPoint dp : dataPoints) {
-	    if (dp.getIntensity() >= minIntensity)
-		goodPoints.add(dp);
-	}
-	return goodPoints.toArray(new DataPoint[0]);
+            DataPoint dataPoints[], double minIntensity) {
+        ArrayList<DataPoint> goodPoints = new ArrayList<DataPoint>();
+        for (DataPoint dp : dataPoints) {
+            if (dp.getIntensity() >= minIntensity)
+                goodPoints.add(dp);
+        }
+        return goodPoints.toArray(new DataPoint[0]);
     }
 
     /**
      * Binning modes
      */
     public static enum BinningType {
-	SUM, MAX, MIN, AVG
+        SUM, MAX, MIN, AVG
     }
 
     /**
@@ -207,152 +201,155 @@ public class ScanUtils {
      * @return Values for each bin
      */
     public static double[] binValues(double[] x, double[] y,
-	    Range<Double> binRange, int numberOfBins, boolean interpolate,
-	    BinningType binningType) {
+            Range<Double> binRange, int numberOfBins, boolean interpolate,
+            BinningType binningType) {
 
-	Double[] binValues = new Double[numberOfBins];
-	double binWidth = (binRange.upperEndpoint() - binRange.lowerEndpoint())
-		/ numberOfBins;
+        Double[] binValues = new Double[numberOfBins];
+        double binWidth = (binRange.upperEndpoint() - binRange.lowerEndpoint())
+                / numberOfBins;
 
-	double beforeX = Double.MIN_VALUE;
-	double beforeY = 0.0f;
-	double afterX = Double.MAX_VALUE;
-	double afterY = 0.0f;
+        double beforeX = Double.MIN_VALUE;
+        double beforeY = 0.0f;
+        double afterX = Double.MAX_VALUE;
+        double afterY = 0.0f;
 
-	double[] noOfEntries = null;
+        double[] noOfEntries = null;
 
-	// Binnings
-	for (int valueIndex = 0; valueIndex < x.length; valueIndex++) {
+        // Binnings
+        for (int valueIndex = 0; valueIndex < x.length; valueIndex++) {
 
-	    // Before first bin?
-	    if ((x[valueIndex] - binRange.lowerEndpoint()) < 0) {
-		if (x[valueIndex] > beforeX) {
-		    beforeX = x[valueIndex];
-		    beforeY = y[valueIndex];
-		}
-		continue;
-	    }
+            // Before first bin?
+            if ((x[valueIndex] - binRange.lowerEndpoint()) < 0) {
+                if (x[valueIndex] > beforeX) {
+                    beforeX = x[valueIndex];
+                    beforeY = y[valueIndex];
+                }
+                continue;
+            }
 
-	    // After last bin?
-	    if ((binRange.upperEndpoint() - x[valueIndex]) < 0) {
-		if (x[valueIndex] < afterX) {
-		    afterX = x[valueIndex];
-		    afterY = y[valueIndex];
-		}
-		continue;
-	    }
+            // After last bin?
+            if ((binRange.upperEndpoint() - x[valueIndex]) < 0) {
+                if (x[valueIndex] < afterX) {
+                    afterX = x[valueIndex];
+                    afterY = y[valueIndex];
+                }
+                continue;
+            }
 
-	    int binIndex = (int) ((x[valueIndex] - binRange.lowerEndpoint()) / binWidth);
+            int binIndex = (int) ((x[valueIndex] - binRange.lowerEndpoint())
+                    / binWidth);
 
-	    // in case x[valueIndex] is exactly lastBinStop, we would overflow
-	    // the array
-	    if (binIndex == binValues.length)
-		binIndex--;
+            // in case x[valueIndex] is exactly lastBinStop, we would overflow
+            // the array
+            if (binIndex == binValues.length)
+                binIndex--;
 
-	    switch (binningType) {
-	    case MAX:
-		if (binValues[binIndex] == null) {
-		    binValues[binIndex] = y[valueIndex];
-		} else {
-		    if (binValues[binIndex] < y[valueIndex]) {
-			binValues[binIndex] = y[valueIndex];
-		    }
-		}
-		break;
-	    case MIN:
-		if (binValues[binIndex] == null) {
-		    binValues[binIndex] = y[valueIndex];
-		} else {
-		    if (binValues[binIndex] > y[valueIndex]) {
-			binValues[binIndex] = y[valueIndex];
-		    }
-		}
-		break;
-	    case AVG:
-		if (noOfEntries == null) {
-		    noOfEntries = new double[binValues.length];
-		}
-		if (binValues[binIndex] == null) {
-		    noOfEntries[binIndex] = 1;
-		    binValues[binIndex] = y[valueIndex];
-		} else {
-		    noOfEntries[binIndex]++;
-		    binValues[binIndex] += y[valueIndex];
-		}
-		break;
+            switch (binningType) {
+            case MAX:
+                if (binValues[binIndex] == null) {
+                    binValues[binIndex] = y[valueIndex];
+                } else {
+                    if (binValues[binIndex] < y[valueIndex]) {
+                        binValues[binIndex] = y[valueIndex];
+                    }
+                }
+                break;
+            case MIN:
+                if (binValues[binIndex] == null) {
+                    binValues[binIndex] = y[valueIndex];
+                } else {
+                    if (binValues[binIndex] > y[valueIndex]) {
+                        binValues[binIndex] = y[valueIndex];
+                    }
+                }
+                break;
+            case AVG:
+                if (noOfEntries == null) {
+                    noOfEntries = new double[binValues.length];
+                }
+                if (binValues[binIndex] == null) {
+                    noOfEntries[binIndex] = 1;
+                    binValues[binIndex] = y[valueIndex];
+                } else {
+                    noOfEntries[binIndex]++;
+                    binValues[binIndex] += y[valueIndex];
+                }
+                break;
 
-	    case SUM:
-	    default:
-		if (binValues[binIndex] == null) {
-		    binValues[binIndex] = y[valueIndex];
-		} else {
-		    binValues[binIndex] += y[valueIndex];
-		}
-		break;
+            case SUM:
+            default:
+                if (binValues[binIndex] == null) {
+                    binValues[binIndex] = y[valueIndex];
+                } else {
+                    binValues[binIndex] += y[valueIndex];
+                }
+                break;
 
-	    }
+            }
 
-	}
+        }
 
-	// calculate the AVG
-	if (binningType.equals(BinningType.AVG)) {
-	    assert noOfEntries != null;
-	    for (int binIndex = 0; binIndex < binValues.length; binIndex++) {
-		if (binValues[binIndex] != null) {
-		    binValues[binIndex] /= noOfEntries[binIndex];
-		}
-	    }
-	}
+        // calculate the AVG
+        if (binningType.equals(BinningType.AVG)) {
+            assert noOfEntries != null;
+            for (int binIndex = 0; binIndex < binValues.length; binIndex++) {
+                if (binValues[binIndex] != null) {
+                    binValues[binIndex] /= noOfEntries[binIndex];
+                }
+            }
+        }
 
-	// Interpolation
-	if (interpolate) {
+        // Interpolation
+        if (interpolate) {
 
-	    for (int binIndex = 0; binIndex < binValues.length; binIndex++) {
-		if (binValues[binIndex] == null) {
+            for (int binIndex = 0; binIndex < binValues.length; binIndex++) {
+                if (binValues[binIndex] == null) {
 
-		    // Find exisiting left neighbour
-		    double leftNeighbourValue = beforeY;
-		    int leftNeighbourBinIndex = (int) Math
-			    .floor((beforeX - binRange.lowerEndpoint())
-				    / binWidth);
-		    for (int anotherBinIndex = binIndex - 1; anotherBinIndex >= 0; anotherBinIndex--) {
-			if (binValues[anotherBinIndex] != null) {
-			    leftNeighbourValue = binValues[anotherBinIndex];
-			    leftNeighbourBinIndex = anotherBinIndex;
-			    break;
-			}
-		    }
+                    // Find exisiting left neighbour
+                    double leftNeighbourValue = beforeY;
+                    int leftNeighbourBinIndex = (int) Math.floor(
+                            (beforeX - binRange.lowerEndpoint()) / binWidth);
+                    for (int anotherBinIndex = binIndex
+                            - 1; anotherBinIndex >= 0; anotherBinIndex--) {
+                        if (binValues[anotherBinIndex] != null) {
+                            leftNeighbourValue = binValues[anotherBinIndex];
+                            leftNeighbourBinIndex = anotherBinIndex;
+                            break;
+                        }
+                    }
 
-		    // Find existing right neighbour
-		    double rightNeighbourValue = afterY;
-		    int rightNeighbourBinIndex = (binValues.length - 1)
-			    + (int) Math.ceil((afterX - binRange
-				    .upperEndpoint()) / binWidth);
-		    for (int anotherBinIndex = binIndex + 1; anotherBinIndex < binValues.length; anotherBinIndex++) {
-			if (binValues[anotherBinIndex] != null) {
-			    rightNeighbourValue = binValues[anotherBinIndex];
-			    rightNeighbourBinIndex = anotherBinIndex;
-			    break;
-			}
-		    }
+                    // Find existing right neighbour
+                    double rightNeighbourValue = afterY;
+                    int rightNeighbourBinIndex = (binValues.length - 1)
+                            + (int) Math
+                                    .ceil((afterX - binRange.upperEndpoint())
+                                            / binWidth);
+                    for (int anotherBinIndex = binIndex
+                            + 1; anotherBinIndex < binValues.length; anotherBinIndex++) {
+                        if (binValues[anotherBinIndex] != null) {
+                            rightNeighbourValue = binValues[anotherBinIndex];
+                            rightNeighbourBinIndex = anotherBinIndex;
+                            break;
+                        }
+                    }
 
-		    double slope = (rightNeighbourValue - leftNeighbourValue)
-			    / (rightNeighbourBinIndex - leftNeighbourBinIndex);
-		    binValues[binIndex] = new Double(leftNeighbourValue + slope
-			    * (binIndex - leftNeighbourBinIndex));
+                    double slope = (rightNeighbourValue - leftNeighbourValue)
+                            / (rightNeighbourBinIndex - leftNeighbourBinIndex);
+                    binValues[binIndex] = new Double(leftNeighbourValue
+                            + slope * (binIndex - leftNeighbourBinIndex));
 
-		}
+                }
 
-	    }
+            }
 
-	}
+        }
 
-	double[] res = new double[binValues.length];
-	for (int binIndex = 0; binIndex < binValues.length; binIndex++) {
-	    res[binIndex] = binValues[binIndex] == null ? 0
-		    : binValues[binIndex];
-	}
-	return res;
+        double[] res = new double[binValues.length];
+        for (int binIndex = 0; binIndex < binValues.length; binIndex++) {
+            res[binIndex] = binValues[binIndex] == null ? 0
+                    : binValues[binIndex];
+        }
+        return res;
 
     }
 
@@ -363,33 +360,33 @@ public class ScanUtils {
      * @return index of best match, or -1 if no datapoint was found
      */
     public static int findClosestDatapoint(double key, double mzValues[],
-	    double mzTolerance) {
+            double mzTolerance) {
 
-	int index = Arrays.binarySearch(mzValues, key);
+        int index = Arrays.binarySearch(mzValues, key);
 
-	if (index >= 0)
-	    return index;
+        if (index >= 0)
+            return index;
 
-	// Get "insertion point"
-	index = (index * -1) - 1;
+        // Get "insertion point"
+        index = (index * -1) - 1;
 
-	// If key value is bigger than biggest m/z value in array
-	if (index == mzValues.length)
-	    index--;
-	else if (index > 0) {
-	    // Check insertion point value and previous one, see which one
-	    // is closer
-	    if (Math.abs(mzValues[index - 1] - key) < Math.abs(mzValues[index]
-		    - key))
-		index--;
-	}
+        // If key value is bigger than biggest m/z value in array
+        if (index == mzValues.length)
+            index--;
+        else if (index > 0) {
+            // Check insertion point value and previous one, see which one
+            // is closer
+            if (Math.abs(mzValues[index - 1] - key) < Math
+                    .abs(mzValues[index] - key))
+                index--;
+        }
 
-	// Check m/z tolerancee
-	if (Math.abs(mzValues[index] - key) <= mzTolerance)
-	    return index;
+        // Check m/z tolerancee
+        if (Math.abs(mzValues[index] - key) <= mzTolerance)
+            return index;
 
-	// Nothing was found
-	return -1;
+        // Nothing was found
+        return -1;
 
     }
 
@@ -474,38 +471,38 @@ public class ScanUtils {
      * range and with precursor m/z within given m/z range
      */
     public static int findBestFragmentScan(RawDataFile dataFile,
-	    Range<Double> rtRange, Range<Double> mzRange) {
+            Range<Double> rtRange, Range<Double> mzRange) {
 
-	assert dataFile != null;
-	assert rtRange != null;
-	assert mzRange != null;
+        assert dataFile != null;
+        assert rtRange != null;
+        assert mzRange != null;
 
-	int bestFragmentScan = -1;
-	double topBasePeak = 0;
+        int bestFragmentScan = -1;
+        double topBasePeak = 0;
 
-	int[] fragmentScanNumbers = dataFile.getScanNumbers(2, rtRange);
+        int[] fragmentScanNumbers = dataFile.getScanNumbers(2, rtRange);
 
-	for (int number : fragmentScanNumbers) {
+        for (int number : fragmentScanNumbers) {
 
-	    Scan scan = dataFile.getScan(number);
+            Scan scan = dataFile.getScan(number);
 
-	    if (mzRange.contains(scan.getPrecursorMZ())) {
+            if (mzRange.contains(scan.getPrecursorMZ())) {
 
-		DataPoint basePeak = scan.getHighestDataPoint();
+                DataPoint basePeak = scan.getHighestDataPoint();
 
-		// If there is no peak in the scan, basePeak can be null
-		if (basePeak == null)
-		    continue;
+                // If there is no peak in the scan, basePeak can be null
+                if (basePeak == null)
+                    continue;
 
-		if (basePeak.getIntensity() > topBasePeak) {
-		    bestFragmentScan = scan.getScanNumber();
-		    topBasePeak = basePeak.getIntensity();
-		}
-	    }
+                if (basePeak.getIntensity() > topBasePeak) {
+                    bestFragmentScan = scan.getScanNumber();
+                    topBasePeak = basePeak.getIntensity();
+                }
+            }
 
-	}
+        }
 
-	return bestFragmentScan;
+        return bestFragmentScan;
 
     }
 
@@ -514,17 +511,17 @@ public class ScanUtils {
      * 
      */
     public static @Nonnull DataPoint findTopDataPoint(
-	    @Nonnull DataPoint dataPoints[]) {
+            @Nonnull DataPoint dataPoints[]) {
 
-	DataPoint topDP = null;
+        DataPoint topDP = null;
 
-	for (DataPoint dp : dataPoints) {
-	    if ((topDP == null) || (dp.getIntensity() > topDP.getIntensity())) {
-		topDP = dp;
-	    }
-	}
+        for (DataPoint dp : dataPoints) {
+            if ((topDP == null) || (dp.getIntensity() > topDP.getIntensity())) {
+                topDP = dp;
+            }
+        }
 
-	return topDP;
+        return topDP;
     }
 
     /**
@@ -532,29 +529,28 @@ public class ScanUtils {
      * least one data point, and the data points are sorted by m/z.
      */
     public static @Nonnull Range<Double> findMzRange(
-	    @Nonnull DataPoint dataPoints[]) {
+            @Nonnull DataPoint dataPoints[]) {
 
-	assert dataPoints.length > 0;
+        assert dataPoints.length > 0;
 
-	double lowMz = dataPoints[0].getMZ();
-	double highMz = lowMz;
-	for (int i = 1; i < dataPoints.length; i++) {
-	    if (dataPoints[i].getMZ() < lowMz) {
-		lowMz = dataPoints[i].getMZ();
-		continue;
-	    }
-	    if (dataPoints[i].getMZ() > highMz)
-		highMz = dataPoints[i].getMZ();
-	}
+        double lowMz = dataPoints[0].getMZ();
+        double highMz = lowMz;
+        for (int i = 1; i < dataPoints.length; i++) {
+            if (dataPoints[i].getMZ() < lowMz) {
+                lowMz = dataPoints[i].getMZ();
+                continue;
+            }
+            if (dataPoints[i].getMZ() > highMz)
+                highMz = dataPoints[i].getMZ();
+        }
 
-	return Range.closed(lowMz, highMz);
+        return Range.closed(lowMz, highMz);
     }
-    
+
     /**
      * Find the RT range of given scans. We assume there is at least one scan.
      */
-    public static @Nonnull Range<Double> findRtRange(
-            @Nonnull Scan scans[]) {
+    public static @Nonnull Range<Double> findRtRange(@Nonnull Scan scans[]) {
 
         assert scans.length > 0;
 
@@ -574,54 +570,54 @@ public class ScanUtils {
     }
 
     public static byte[] encodeDataPointsToBytes(DataPoint dataPoints[]) {
-	ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-	DataOutputStream peakStream = new DataOutputStream(byteStream);
-	for (int i = 0; i < dataPoints.length; i++) {
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        DataOutputStream peakStream = new DataOutputStream(byteStream);
+        for (int i = 0; i < dataPoints.length; i++) {
 
-	    try {
-		peakStream.writeDouble(dataPoints[i].getMZ());
-		peakStream.writeDouble(dataPoints[i].getIntensity());
-	    } catch (IOException e) {
-		e.printStackTrace();
-	    }
-	}
-	byte peakBytes[] = byteStream.toByteArray();
-	return peakBytes;
+            try {
+                peakStream.writeDouble(dataPoints[i].getMZ());
+                peakStream.writeDouble(dataPoints[i].getIntensity());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        byte peakBytes[] = byteStream.toByteArray();
+        return peakBytes;
     }
 
     public static char[] encodeDataPointsBase64(DataPoint dataPoints[]) {
-	byte peakBytes[] = encodeDataPointsToBytes(dataPoints);
-	char encodedData[] = Base64.encode(peakBytes).toCharArray();
-	return encodedData;
+        byte peakBytes[] = encodeDataPointsToBytes(dataPoints);
+        char encodedData[] = Base64.encode(peakBytes).toCharArray();
+        return encodedData;
     }
 
     public static DataPoint[] decodeDataPointsFromBytes(byte bytes[]) {
-	// each double is 8 bytes and we need one for m/z and one for intensity
-	int dpCount = bytes.length / 2 / 8;
+        // each double is 8 bytes and we need one for m/z and one for intensity
+        int dpCount = bytes.length / 2 / 8;
 
-	// make a data input stream
-	ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
-	DataInputStream peakStream = new DataInputStream(byteStream);
+        // make a data input stream
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
+        DataInputStream peakStream = new DataInputStream(byteStream);
 
-	DataPoint dataPoints[] = new DataPoint[dpCount];
+        DataPoint dataPoints[] = new DataPoint[dpCount];
 
-	for (int i = 0; i < dataPoints.length; i++) {
-	    try {
-		double mz = peakStream.readDouble();
-		double intensity = peakStream.readDouble();
-		dataPoints[i] = new SimpleDataPoint(mz, intensity);
-	    } catch (IOException e) {
-		e.printStackTrace();
-	    }
-	}
+        for (int i = 0; i < dataPoints.length; i++) {
+            try {
+                double mz = peakStream.readDouble();
+                double intensity = peakStream.readDouble();
+                dataPoints[i] = new SimpleDataPoint(mz, intensity);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-	return dataPoints;
+        return dataPoints;
     }
 
     public static DataPoint[] decodeDataPointsBase64(char encodedData[]) {
-	byte[] bytes = Base64.decode(new String(encodedData));
-	DataPoint dataPoints[] = decodeDataPointsFromBytes(bytes);
-	return dataPoints;
+        byte[] bytes = Base64.decode(new String(encodedData));
+        DataPoint dataPoints[] = decodeDataPointsFromBytes(bytes);
+        return dataPoints;
     }
 
 }

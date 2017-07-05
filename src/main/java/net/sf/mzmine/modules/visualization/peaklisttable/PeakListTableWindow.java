@@ -33,9 +33,7 @@ import javax.swing.JTable.PrintMode;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import net.sf.mzmine.datamodel.Feature;
 import net.sf.mzmine.datamodel.PeakList;
-import net.sf.mzmine.datamodel.PeakListRow;
 import net.sf.mzmine.desktop.impl.WindowsMenu;
 import net.sf.mzmine.main.MZmineCore;
 import net.sf.mzmine.modules.visualization.peaklisttable.table.PeakListTable;
@@ -62,57 +60,57 @@ public class PeakListTableWindow extends JFrame implements ActionListener {
      */
     PeakListTableWindow(PeakList peakList, ParameterSet parameters) {
 
-	super("Peak list: " + peakList.getName());
-	System.out.println(peakList+ " "+peakList.getClass());
-	this.parameters = parameters;
-	for(PeakListRow f: peakList.getRows()){
-		for(Feature a : f.getPeaks()){
-			
-			System.out.println(a+ " "+ a.getClass());
-			for(Integer i : a.getScanNumbers()){
-				System.out.println(a.getDataPoint(i));
-			}
-		}
-	}
-	setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-	setBackground(Color.white);
+        super("Peak list: " + peakList.getName());
+        System.out.println(peakList + " " + peakList.getClass());
+        this.parameters = parameters;
+        // for(PeakListRow f: peakList.getRows()){
+        // for(Feature a : f.getPeaks()){
+        //
+        // System.out.println(a+ " "+ a.getClass());
+        // for(Integer i : a.getScanNumbers()){
+        // System.out.println(a.getDataPoint(i));
+        // }
+        // }
+        // }
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setBackground(Color.white);
 
-	// Build toolbar
-	PeakListTableToolBar toolBar = new PeakListTableToolBar(this);
-	add(toolBar, BorderLayout.EAST);
+        // Build toolbar
+        PeakListTableToolBar toolBar = new PeakListTableToolBar(this);
+        add(toolBar, BorderLayout.EAST);
 
-	// Build table
-	table = new PeakListTable(this, parameters, peakList);
+        // Build table
+        table = new PeakListTable(this, parameters, peakList);
 
-	scrollPane = new JScrollPane(table);
+        scrollPane = new JScrollPane(table);
 
-	add(scrollPane, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
 
-	// Add the Windows menu
-	JMenuBar menuBar = new JMenuBar();
-	menuBar.add(new WindowsMenu());
-	setJMenuBar(menuBar);
+        // Add the Windows menu
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.add(new WindowsMenu());
+        setJMenuBar(menuBar);
 
-	pack();
+        pack();
 
-	// get the window settings parameter
-	ParameterSet paramSet = MZmineCore.getConfiguration()
-		.getModuleParameters(PeakListTableModule.class);
-	WindowSettingsParameter settings = paramSet
-		.getParameter(PeakListTableParameters.windowSettings);
+        // get the window settings parameter
+        ParameterSet paramSet = MZmineCore.getConfiguration()
+                .getModuleParameters(PeakListTableModule.class);
+        WindowSettingsParameter settings = paramSet
+                .getParameter(PeakListTableParameters.windowSettings);
 
-	// update the window and listen for changes
-	settings.applySettingsToWindow(this);
-	this.addComponentListener(settings);
+        // update the window and listen for changes
+        settings.applySettingsToWindow(this);
+        this.addComponentListener(settings);
 
     }
 
     public int getJScrollSizeWidth() {
-	return table.getPreferredSize().width;
+        return table.getPreferredSize().width;
     }
 
     public int getJScrollSizeHeight() {
-	return table.getPreferredSize().height;
+        return table.getPreferredSize().height;
     }
 
     /**
@@ -120,51 +118,53 @@ public class PeakListTableWindow extends JFrame implements ActionListener {
      */
     public void actionPerformed(ActionEvent event) {
 
-	String command = event.getActionCommand();
+        String command = event.getActionCommand();
 
-	if (command.equals("PROPERTIES")) {
+        if (command.equals("PROPERTIES")) {
 
-	    ExitCode exitCode = parameters.showSetupDialog(this, true);
-	    if (exitCode == ExitCode.OK) {
-		int rowHeight = parameters.getParameter(
-			PeakListTableParameters.rowHeight).getValue();
-		table.setRowHeight(rowHeight);
+            ExitCode exitCode = parameters.showSetupDialog(this, true);
+            if (exitCode == ExitCode.OK) {
+                int rowHeight = parameters
+                        .getParameter(PeakListTableParameters.rowHeight)
+                        .getValue();
+                table.setRowHeight(rowHeight);
 
-		PeakListTableColumnModel cm = (PeakListTableColumnModel) table
-			.getColumnModel();
-		cm.createColumns();
+                PeakListTableColumnModel cm = (PeakListTableColumnModel) table
+                        .getColumnModel();
+                cm.createColumns();
 
-	    }
-	}
+            }
+        }
 
-	if (command.equals("AUTOCOLUMNWIDTH")) {
-	    // Auto size column width based on data
-	    for (int column = 0; column < table.getColumnCount(); column++) {
-		TableColumn tableColumn = table.getColumnModel().getColumn(
-			column);
-		if (tableColumn.getHeaderValue() != "Peak shape"
-			&& tableColumn.getHeaderValue() != "Status") {
-		    TableCellRenderer renderer = tableColumn
-			    .getHeaderRenderer();
-		    if (renderer == null) {
-			renderer = table.getTableHeader().getDefaultRenderer();
-		    }
-		    Component component = renderer
-			    .getTableCellRendererComponent(table,
-				    tableColumn.getHeaderValue(), false, false,
-				    -1, column);
-		    int preferredWidth = component.getPreferredSize().width + 20;
-		    tableColumn.setPreferredWidth(preferredWidth);
-		}
-	    }
-	}
+        if (command.equals("AUTOCOLUMNWIDTH")) {
+            // Auto size column width based on data
+            for (int column = 0; column < table.getColumnCount(); column++) {
+                TableColumn tableColumn = table.getColumnModel()
+                        .getColumn(column);
+                if (tableColumn.getHeaderValue() != "Peak shape"
+                        && tableColumn.getHeaderValue() != "Status") {
+                    TableCellRenderer renderer = tableColumn
+                            .getHeaderRenderer();
+                    if (renderer == null) {
+                        renderer = table.getTableHeader().getDefaultRenderer();
+                    }
+                    Component component = renderer
+                            .getTableCellRendererComponent(table,
+                                    tableColumn.getHeaderValue(), false, false,
+                                    -1, column);
+                    int preferredWidth = component.getPreferredSize().width
+                            + 20;
+                    tableColumn.setPreferredWidth(preferredWidth);
+                }
+            }
+        }
 
-	if (command.equals("PRINT")) {
-	    try {
-		table.print(PrintMode.FIT_WIDTH);
-	    } catch (PrinterException e) {
-		MZmineCore.getDesktop().displayException(this, e);
-	    }
-	}
+        if (command.equals("PRINT")) {
+            try {
+                table.print(PrintMode.FIT_WIDTH);
+            } catch (PrinterException e) {
+                MZmineCore.getDesktop().displayException(this, e);
+            }
+        }
     }
 }

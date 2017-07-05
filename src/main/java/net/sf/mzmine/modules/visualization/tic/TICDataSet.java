@@ -27,6 +27,11 @@ import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 
+import org.jfree.data.xy.AbstractXYZDataset;
+
+import com.google.common.collect.Range;
+import com.google.common.primitives.Ints;
+
 import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.Scan;
@@ -35,11 +40,6 @@ import net.sf.mzmine.taskcontrol.Task;
 import net.sf.mzmine.taskcontrol.TaskPriority;
 import net.sf.mzmine.taskcontrol.TaskStatus;
 import net.sf.mzmine.util.ScanUtils;
-
-import org.jfree.data.xy.AbstractXYZDataset;
-
-import com.google.common.collect.Range;
-import com.google.common.primitives.Ints;
 
 /**
  * TIC visualizer data set. One data set is created per file shown in this
@@ -98,8 +98,8 @@ public class TICDataSet extends AbstractXYZDataset implements Task {
      */
     public TICDataSet(final RawDataFile file, final Scan scans[],
             final Range<Double> rangeMZ, final TICVisualizerWindow window) {
-        this(file, scans, rangeMZ, window, ((window != null) ? window
-                .getPlotType() : TICPlotType.BASEPEAK));
+        this(file, scans, rangeMZ, window, ((window != null)
+                ? window.getPlotType() : TICPlotType.BASEPEAK));
     }
 
     /**
@@ -148,8 +148,8 @@ public class TICDataSet extends AbstractXYZDataset implements Task {
 
     @Override
     public double getFinishedPercentage() {
-        return totalScans == 0 ? 0.0 : (double) processedScans
-                / (double) totalScans;
+        return totalScans == 0 ? 0.0
+                : (double) processedScans / (double) totalScans;
     }
 
     @Override
@@ -180,8 +180,8 @@ public class TICDataSet extends AbstractXYZDataset implements Task {
             }
         } catch (Throwable t) {
 
-            LOG.log(Level.SEVERE, "Problem calculating data set values for "
-                    + dataFile, t);
+            LOG.log(Level.SEVERE,
+                    "Problem calculating data set values for " + dataFile, t);
             status = TaskStatus.ERROR;
             errorMessage = t.getMessage();
         }
@@ -320,11 +320,13 @@ public class TICDataSet extends AbstractXYZDataset implements Task {
 
         final int length = rtCopy.length;
         final Collection<Integer> indices = new ArrayList<Integer>(length);
-        for (int index = startIndex; index < length && rtCopy[index] <= xMax; index++) {
+        for (int index = startIndex; index < length
+                && rtCopy[index] <= xMax; index++) {
 
             // Check Y range..
             final double intensity = intensityValues[index];
-            if (yMin <= intensity && intensity <= yMax && isLocalMaximum(index)) {
+            if (yMin <= intensity && intensity <= yMax
+                    && isLocalMaximum(index)) {
 
                 indices.add(index);
             }
@@ -343,36 +345,30 @@ public class TICDataSet extends AbstractXYZDataset implements Task {
     }
 
     private void calculateValues() {
-    	System.out.println("heyi'm here!");
+        System.out.println("heyi'm here!");
 
         // Determine plot type (now done from constructor).
         final TICPlotType plotType = this.plotType;
 
         // Process each scan.
-        System.out.println(mzRange);
-        for (int index = 0; status != TaskStatus.CANCELED && index < totalScans; index++) {
+        // System.out.println(mzRange);
+        for (int index = 0; status != TaskStatus.CANCELED
+                && index < totalScans; index++) {
 
             // Current scan.
             final Scan scan = scans[index];
-            System.out.println("scan range" +scan.getDataPointMZRange()+ " " +mzRange);
             // Determine base peak value.
-            final DataPoint basePeak = mzRange.encloses(scan.getDataPointMZRange()) ? scan.getHighestDataPoint() : ScanUtils.findBasePeak(scan, mzRange);
-                
-            if (basePeak != null) {
-
-                basePeakValues[index] = basePeak.getMZ();
-                System.out.println("a peak:"+ basePeakValues[index]);
-            }else{
-                System.out.println("a different peak:"+ null);
-            }
+            final DataPoint basePeak = mzRange.encloses(
+                    scan.getDataPointMZRange()) ? scan.getHighestDataPoint()
+                            : ScanUtils.findBasePeak(scan, mzRange);
 
             // Determine peak intensity.
             double intensity = 0.0;
             if (plotType == TICPlotType.TIC) {
 
                 // Total ion count.
-                intensity = mzRange.encloses(scan.getDataPointMZRange()) ? scan
-                        .getTIC() : ScanUtils.calculateTIC(scan, mzRange);
+                intensity = mzRange.encloses(scan.getDataPointMZRange())
+                        ? scan.getTIC() : ScanUtils.calculateTIC(scan, mzRange);
 
             } else if (plotType == TICPlotType.BASEPEAK && basePeak != null) {
 
@@ -399,7 +395,8 @@ public class TICDataSet extends AbstractXYZDataset implements Task {
             // Refresh every REDRAW_INTERVAL ms.
             synchronized (TICDataSet.class) {
 
-                if (System.currentTimeMillis() - lastRedrawTime > REDRAW_INTERVAL) {
+                if (System.currentTimeMillis()
+                        - lastRedrawTime > REDRAW_INTERVAL) {
 
                     refresh();
                     lastRedrawTime = System.currentTimeMillis();

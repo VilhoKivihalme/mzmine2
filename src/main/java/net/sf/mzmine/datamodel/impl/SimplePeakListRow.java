@@ -33,7 +33,6 @@ import net.sf.mzmine.datamodel.PeakInformation;
 import net.sf.mzmine.datamodel.PeakListRow;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.main.MZmineCore;
-import net.sf.mzmine.modules.masslistmethods.dichromatogrambuilder.DIChromatogram;
 import net.sf.mzmine.util.PeakSorter;
 import net.sf.mzmine.util.SortingDirection;
 import net.sf.mzmine.util.SortingProperty;
@@ -60,9 +59,9 @@ public class SimplePeakListRow implements PeakListRow {
     private int rowCharge;
 
     public SimplePeakListRow(int myID) {
-	this.myID = myID;
-	peaks = new Hashtable<RawDataFile, Feature>();
-	identities = new Vector<PeakIdentity>();
+        this.myID = myID;
+        peaks = new Hashtable<RawDataFile, Feature>();
+        identities = new Vector<PeakIdentity>();
         information = null;
         preferredPeak = null;
     }
@@ -71,195 +70,193 @@ public class SimplePeakListRow implements PeakListRow {
      * @see net.sf.mzmine.datamodel.PeakListRow#getID()
      */
     public int getID() {
-	return myID;
+        return myID;
     }
 
     /**
      * Return peaks assigned to this row
      */
     public Feature[] getPeaks() {
-	return peaks.values().toArray(new Feature[0]);
+        return peaks.values().toArray(new Feature[0]);
     }
 
     public void removePeak(RawDataFile file) {
-	this.peaks.remove(file);
-	calculateAverageValues();
+        this.peaks.remove(file);
+        calculateAverageValues();
     }
 
     /**
      * Returns opened raw data files with a peak on this row
      */
     public RawDataFile[] getRawDataFiles() {
-	return peaks.keySet().toArray(new RawDataFile[0]);
+        return peaks.keySet().toArray(new RawDataFile[0]);
     }
 
     /**
      * Returns peak for given raw data file
      */
     public Feature getPeak(RawDataFile rawData) {
-	return peaks.get(rawData);
+        return peaks.get(rawData);
     }
 
     public synchronized void addPeak(RawDataFile rawData, Feature peak) {
-//    	System.out.println(peak.getMZ());
-    	if(peak.getMZ()==164.14329528808594){
-    		System.out.println("target");
-    		System.out.println(peak.getClass());
-    	((DIChromatogram)peak).test();
-    	System.out.println(((DIChromatogram)peak).getArea());
-    	}
 
-	if (peak == null)
-	    throw new IllegalArgumentException(
-		    "Cannot add null peak to a peak list row");
+        if (peak == null)
+            throw new IllegalArgumentException(
+                    "Cannot add null peak to a peak list row");
 
-	peaks.put(rawData, peak);
+        peaks.put(rawData, peak);
 
-	if (peak.getRawDataPointsIntensityRange().upperEndpoint() > maxDataPointIntensity)
-	    maxDataPointIntensity = peak.getRawDataPointsIntensityRange()
-		    .upperEndpoint();
-	calculateAverageValues();
+        if (peak.getRawDataPointsIntensityRange()
+                .upperEndpoint() > maxDataPointIntensity)
+            maxDataPointIntensity = peak.getRawDataPointsIntensityRange()
+                    .upperEndpoint();
+        calculateAverageValues();
     }
 
     public double getAverageMZ() {
-	return averageMZ;
+        return averageMZ;
     }
 
     public double getAverageRT() {
-	return averageRT;
+        return averageRT;
     }
 
     public double getAverageHeight() {
-	return averageHeight;
+        return averageHeight;
     }
 
     public double getAverageArea() {
-	return averageArea;
+        return averageArea;
     }
 
     public int getRowCharge() {
-	return rowCharge;
+        return rowCharge;
     }
 
     private synchronized void calculateAverageValues() {
-	double rtSum = 0, mzSum = 0, heightSum = 0, areaSum = 0;
-	int charge = 0;
-	HashSet<Integer> chargeArr = new HashSet<Integer>();
-	Enumeration<Feature> peakEnum = peaks.elements();
-	while (peakEnum.hasMoreElements()) {
-	    Feature p = peakEnum.nextElement();
-	    rtSum += p.getRT();
-	    mzSum += p.getMZ();
-	    heightSum += p.getHeight();
-	    areaSum += p.getArea();
-	    if (p.getCharge() > 0) {
-		chargeArr.add(p.getCharge());
-		charge = p.getCharge();
-	    }
-	}
-	averageRT = rtSum / peaks.size();
-	averageMZ = mzSum / peaks.size();
-	averageHeight = heightSum / peaks.size();
-	averageArea = areaSum / peaks.size();
-	if (chargeArr.size() < 2) { rowCharge = charge; } else { rowCharge = 0; }
+        double rtSum = 0, mzSum = 0, heightSum = 0, areaSum = 0;
+        int charge = 0;
+        HashSet<Integer> chargeArr = new HashSet<Integer>();
+        Enumeration<Feature> peakEnum = peaks.elements();
+        while (peakEnum.hasMoreElements()) {
+            Feature p = peakEnum.nextElement();
+            rtSum += p.getRT();
+            mzSum += p.getMZ();
+            heightSum += p.getHeight();
+            areaSum += p.getArea();
+            if (p.getCharge() > 0) {
+                chargeArr.add(p.getCharge());
+                charge = p.getCharge();
+            }
+        }
+        averageRT = rtSum / peaks.size();
+        averageMZ = mzSum / peaks.size();
+        averageHeight = heightSum / peaks.size();
+        averageArea = areaSum / peaks.size();
+        if (chargeArr.size() < 2) {
+            rowCharge = charge;
+        } else {
+            rowCharge = 0;
+        }
     }
 
     /**
      * Returns number of peaks assigned to this row
      */
     public int getNumberOfPeaks() {
-	return peaks.size();
+        return peaks.size();
     }
 
     public String toString() {
-	StringBuffer buf = new StringBuffer();
-	Format mzFormat = MZmineCore.getConfiguration().getMZFormat();
-	Format timeFormat = MZmineCore.getConfiguration().getRTFormat();
-	buf.append("#" + myID + " ");
-	buf.append(mzFormat.format(getAverageMZ()));
-	buf.append(" m/z @");
-	buf.append(timeFormat.format(getAverageRT()));
-	if (preferredIdentity != null)
-	    buf.append(" " + preferredIdentity.getName());
-	if ((comment != null) && (comment.length() > 0))
-	    buf.append(" (" + comment + ")");
-	return buf.toString();
+        StringBuffer buf = new StringBuffer();
+        Format mzFormat = MZmineCore.getConfiguration().getMZFormat();
+        Format timeFormat = MZmineCore.getConfiguration().getRTFormat();
+        buf.append("#" + myID + " ");
+        buf.append(mzFormat.format(getAverageMZ()));
+        buf.append(" m/z @");
+        buf.append(timeFormat.format(getAverageRT()));
+        if (preferredIdentity != null)
+            buf.append(" " + preferredIdentity.getName());
+        if ((comment != null) && (comment.length() > 0))
+            buf.append(" (" + comment + ")");
+        return buf.toString();
     }
 
     /**
      * @see net.sf.mzmine.datamodel.PeakListRow#getComment()
      */
     public String getComment() {
-	return comment;
+        return comment;
     }
 
     /**
      * @see net.sf.mzmine.datamodel.PeakListRow#setComment(java.lang.String)
      */
     public void setComment(String comment) {
-	this.comment = comment;
+        this.comment = comment;
     }
-    
+
     /**
      * @see net.sf.mzmine.datamodel.PeakListRow#setAverageMZ(java.lang.String)
      */
     public void setAverageMZ(double mz) {
-	this.averageMZ = mz;
+        this.averageMZ = mz;
     }
 
     /**
      * @see net.sf.mzmine.datamodel.PeakListRow#setAverageRT(java.lang.String)
      */
     public void setAverageRT(double rt) {
-	this.averageRT = rt;
+        this.averageRT = rt;
     }
 
     /**
      * @see net.sf.mzmine.datamodel.PeakListRow#addCompoundIdentity(net.sf.mzmine.datamodel.PeakIdentity)
      */
     public synchronized void addPeakIdentity(PeakIdentity identity,
-	    boolean preferred) {
+            boolean preferred) {
 
-	// Verify if exists already an identity with the same name
-	for (PeakIdentity testId : identities) {
-	    if (testId.getName().equals(identity.getName())) {
-		return;
-	    }
-	}
+        // Verify if exists already an identity with the same name
+        for (PeakIdentity testId : identities) {
+            if (testId.getName().equals(identity.getName())) {
+                return;
+            }
+        }
 
-	identities.add(identity);
-	if ((preferredIdentity == null) || (preferred)) {
-	    setPreferredPeakIdentity(identity);
-	}
+        identities.add(identity);
+        if ((preferredIdentity == null) || (preferred)) {
+            setPreferredPeakIdentity(identity);
+        }
     }
 
     /**
      * @see net.sf.mzmine.datamodel.PeakListRow#addCompoundIdentity(net.sf.mzmine.datamodel.PeakIdentity)
      */
     public synchronized void removePeakIdentity(PeakIdentity identity) {
-	identities.remove(identity);
-	if (preferredIdentity == identity) {
-	    if (identities.size() > 0) {
-		PeakIdentity[] identitiesArray = identities
-			.toArray(new PeakIdentity[0]);
-		setPreferredPeakIdentity(identitiesArray[0]);
-	    } else
-		preferredIdentity = null;
-	}
+        identities.remove(identity);
+        if (preferredIdentity == identity) {
+            if (identities.size() > 0) {
+                PeakIdentity[] identitiesArray = identities
+                        .toArray(new PeakIdentity[0]);
+                setPreferredPeakIdentity(identitiesArray[0]);
+            } else
+                preferredIdentity = null;
+        }
     }
 
     /**
      * @see net.sf.mzmine.datamodel.PeakListRow#getPeakIdentities()
      */
     public PeakIdentity[] getPeakIdentities() {
-	return identities.toArray(new PeakIdentity[0]);
+        return identities.toArray(new PeakIdentity[0]);
     }
 
     /**
      * @see net.sf.mzmine.datamodel.PeakListRow#getPreferredPeakIdentity()
      */
     public PeakIdentity getPreferredPeakIdentity() {
-	return preferredIdentity;
+        return preferredIdentity;
     }
 
     /**
@@ -267,14 +264,14 @@ public class SimplePeakListRow implements PeakListRow {
      */
     public void setPreferredPeakIdentity(PeakIdentity identity) {
 
-	if (identity == null)
-	    return;
+        if (identity == null)
+            return;
 
-	preferredIdentity = identity;
+        preferredIdentity = identity;
 
-	if (!identities.contains(identity)) {
-	    identities.add(identity);
-	}
+        if (!identities.contains(identity)) {
+            identities.add(identity);
+        }
 
     }
 
@@ -282,42 +279,42 @@ public class SimplePeakListRow implements PeakListRow {
     public void setPeakInformation(PeakInformation information) {
         this.information = information;
     }
-    
+
     @Override
     public PeakInformation getPeakInformation() {
         return information;
     }
-    
+
     /**
      * @see net.sf.mzmine.datamodel.PeakListRow#getDataPointMaxIntensity()
      */
     public double getDataPointMaxIntensity() {
-	return maxDataPointIntensity;
+        return maxDataPointIntensity;
     }
 
     public boolean hasPeak(Feature peak) {
-	return peaks.containsValue(peak);
+        return peaks.containsValue(peak);
     }
 
     public boolean hasPeak(RawDataFile file) {
-	return peaks.containsKey(file);
+        return peaks.containsKey(file);
     }
 
     /**
      * Returns the highest isotope pattern of a peak in this row
      */
     public IsotopePattern getBestIsotopePattern() {
-	Feature peaks[] = getPeaks();
-	Arrays.sort(peaks, new PeakSorter(SortingProperty.Height,
-		SortingDirection.Descending));
+        Feature peaks[] = getPeaks();
+        Arrays.sort(peaks, new PeakSorter(SortingProperty.Height,
+                SortingDirection.Descending));
 
-	for (Feature peak : peaks) {
-	    IsotopePattern ip = peak.getIsotopePattern();
-	    if (ip != null)
-		return ip;
-	}
+        for (Feature peak : peaks) {
+            IsotopePattern ip = peak.getIsotopePattern();
+            if (ip != null)
+                return ip;
+        }
 
-	return null;
+        return null;
     }
 
     /**
@@ -325,22 +322,22 @@ public class SimplePeakListRow implements PeakListRow {
      */
     public Feature getBestPeak() {
 
-	Feature peaks[] = getPeaks();
-	Arrays.sort(peaks, new PeakSorter(SortingProperty.Height,
-		SortingDirection.Descending));
-	if (peaks.length == 0)
-	    return null;
-	return peaks[0];
+        Feature peaks[] = getPeaks();
+        Arrays.sort(peaks, new PeakSorter(SortingProperty.Height,
+                SortingDirection.Descending));
+        if (peaks.length == 0)
+            return null;
+        return peaks[0];
     }
-    
-    //DorresteinLab edit
+
+    // DorresteinLab edit
     /**
      * set the ID number
      */
 
-    public void setID (int id){
-    	myID =id;
-    	return;
+    public void setID(int id) {
+        myID = id;
+        return;
     }
 }
-    //End DorresteinLab edit
+// End DorresteinLab edit

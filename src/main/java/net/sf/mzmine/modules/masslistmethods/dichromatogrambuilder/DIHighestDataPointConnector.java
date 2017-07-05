@@ -19,7 +19,9 @@
 
 package net.sf.mzmine.modules.masslistmethods.dichromatogrambuilder;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -75,16 +77,19 @@ public class DIHighestDataPointConnector {
 
         // TODO: these two nested cycles should be optimized for speed
         for (DataPoint mzPeak : mzValues) {
-        	
+
             // Search for best chromatogram, which has highest last data point
             DIChromatogram bestChromatogram = null;
-//            System.out.println("CURRENT SIZE:"+connectedChromatograms.size()+" " +buildingChromatograms.size());
+            // System.out.println("CURRENT
+            // SIZE:"+connectedChromatograms.size()+" "
+            // +buildingChromatograms.size());
             for (DIChromatogram testChrom : buildingChromatograms) {
                 // System.out.println(testChrom);
 
                 DataPoint lastMzPeak = testChrom.getLastMzPeak();
-                Range<Double> toleranceRange = mzTolerance.getToleranceRange(lastMzPeak.getMZ());
-                
+                Range<Double> toleranceRange = mzTolerance
+                        .getToleranceRange(lastMzPeak.getMZ());
+
                 if (toleranceRange.contains(mzPeak.getMZ())) {
                     if ((bestChromatogram == null) || (testChrom.getLastMzPeak()
                             .getIntensity() > bestChromatogram.getLastMzPeak()
@@ -183,9 +188,67 @@ public class DIHighestDataPointConnector {
 
         }
 
+        HashMap<DIChromatogram, ArrayList<DIChromatogram>> lists = new HashMap<DIChromatogram, ArrayList<DIChromatogram>>();
+        HashMap<DIChromatogram, Range<Double>> newRanges = new HashMap<DIChromatogram, Range<Double>>();
+        ArrayList<DIChromatogram> mergedd = new ArrayList<DIChromatogram>();
+        chromIterator = buildingChromatograms.iterator();
+
+        // iterate all chromatograms
+        while (chromIterator.hasNext()) {
+            DIChromatogram chromatogram = chromIterator.next();
+
+            // init new chromatogram list
+            lists.put(chromatogram, new ArrayList<DIChromatogram>());
+            newRanges.put(chromatogram, chromatogram.getRawDataPointsMZRange());
+            // go throught all others
+            for (DIChromatogram d : buildingChromatograms) {
+
+                // do not test current to itself
+                if (d != chromatogram) {
+
+                    if (!mergedd.contains(d)) {
+                        if (d.getRawDataPointsMZRange()
+                                .isConnected(newRanges.get(chromatogram))) {
+                            System.out.println("TRUE!");
+                            lists.get(chromatogram).add(d);
+
+                            mergedd.add(d);
+                            newRanges.put(chromatogram,
+                                    d.getRawDataPointsMZRange()
+                                            .span(newRanges.get(chromatogram)));
+                            System.out.println(newRanges.get(chromatogram));
+                            // System.out.prHintln(d.getRawDataPointsMZRange() +
+                            // " "
+                            // + chromatogram.getRawDataPointsMZRange());
+
+                        }
+
+                    }
+                }
+            }
+        }
+
+        ArrayList<DIChromatogram> merged = new ArrayList<DIChromatogram>();
+
+        for (DIChromatogram di : lists.keySet()) {
+            ArrayList<DIChromatogram> list = lists.get(di);
+
+            DIChromatogram merge = di;
+            for (DIChromatogram toMerge : list) {
+
+                System.out.println("Merging " + toMerge + " to " + di);
+
+                merge = DIChromatogram.merge(di, toMerge);
+
+            }
+            merged.add(merge);
+        }
+        for (DIChromatogram di : merged) {
+            di.finishChromatogram();
+        }
+
         // All remaining chromatograms are good, so we can return them
-        DIChromatogram[] chromatograms = buildingChromatograms
-                .toArray(new DIChromatogram[0]);
+        DIChromatogram[] chromatograms = merged.toArray(new DIChromatogram[0]);
         return chromatograms;
     }
 
