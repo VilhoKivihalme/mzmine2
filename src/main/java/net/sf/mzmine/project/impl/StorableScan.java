@@ -141,7 +141,7 @@ public class StorableScan implements Scan {
 	    @Nonnull Range<Double> mzRange) {
 	DataPoint dataPoints[] = getDataPoints();
 
-	System.out.println("ALL DATAPOINTS "+dataPoints.length+" "+mzRange);
+//	System.out.println("ALL DATAPOINTS "+dataPoints.length+" "+mzRange);
 /*	try {
 		PrintWriter pw = new PrintWriter(new File("C:/Users/Vilho/Desktop/datapoints/"+this.scanNumber+" rt-" +this.retentionTime+".txt"));
 		for(DataPoint d : dataPoints){
@@ -166,9 +166,9 @@ public class StorableScan implements Scan {
 		break;
 	    }
 	}
-	if(endIndex-startIndex<=0){
-		endIndex++;
-	}
+//	if(endIndex-startIndex<=0){
+//		endIndex++;
+//	}
 	DataPoint pointsWithinRange[] = new DataPoint[endIndex - startIndex];
 
 	// Copy the relevant points

@@ -43,7 +43,7 @@ import net.sf.mzmine.util.ScanUtils;
 /**
  * Chromatogram implementing ChromatographicPeak.
  */
-public class DIChromatogram implements Feature {
+public class DIChromatogram implements Feature, Comparable<DIChromatogram> {
 
     private SimplePeakInformation peakInfo;
 
@@ -340,15 +340,21 @@ public class DIChromatogram implements Feature {
     }
 
     public static DIChromatogram merge(DIChromatogram di1, DIChromatogram di2) {
-
         DIChromatogram merged = new DIChromatogram(di1.dataFile,
                 di1.scanNumbers);
-
+        
+        
         for (Integer i : di1.dataPointsMap.keySet()) {
+//        	System.out.println(i);
             merged.addMzPeak(i, di1.dataPointsMap.get(i));
         }
+        
         for (Integer i : di2.dataPointsMap.keySet()) {
-            merged.addMzPeak(i, di2.dataPointsMap.get(i));
+        	if(!di1.dataPointsMap.containsKey(i)){
+        		merged.addMzPeak(i, di2.dataPointsMap.get(i));
+        	}else{
+        		System.out.println("ERROR, two same scan numbers: " + i);
+        	}
         }
         return merged;
     }
@@ -392,5 +398,11 @@ public class DIChromatogram implements Feature {
     public SimplePeakInformation getPeakInformation() {
         return peakInfo;
     }
+
+	@Override
+	public int compareTo(DIChromatogram o) {
+		return new Double(mz).compareTo(new  Double(o.mz));
+		
+	}
 
 }

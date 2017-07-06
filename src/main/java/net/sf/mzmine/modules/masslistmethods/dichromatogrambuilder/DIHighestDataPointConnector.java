@@ -190,7 +190,7 @@ public class DIHighestDataPointConnector {
 
         HashMap<DIChromatogram, ArrayList<DIChromatogram>> lists = new HashMap<DIChromatogram, ArrayList<DIChromatogram>>();
         HashMap<DIChromatogram, Range<Double>> newRanges = new HashMap<DIChromatogram, Range<Double>>();
-        ArrayList<DIChromatogram> mergedd = new ArrayList<DIChromatogram>();
+        LinkedHashSet<DIChromatogram> mergedNotToAdd = new LinkedHashSet<DIChromatogram>();
         chromIterator = buildingChromatograms.iterator();
 
         // iterate all chromatograms
@@ -200,23 +200,28 @@ public class DIHighestDataPointConnector {
             // init new chromatogram list
             lists.put(chromatogram, new ArrayList<DIChromatogram>());
             newRanges.put(chromatogram, chromatogram.getRawDataPointsMZRange());
-            // go throught all others
-            for (DIChromatogram d : buildingChromatograms) {
-
+            // go through all others
+            Iterator<DIChromatogram> another = buildingChromatograms.iterator();
+            while (another.hasNext()) {
+            	DIChromatogram d = another.next();
                 // do not test current to itself
                 if (d != chromatogram) {
 
-                    if (!mergedd.contains(d)) {
+                    if (!mergedNotToAdd.contains(d)) {//if this has not been merged somewhere
                         if (d.getRawDataPointsMZRange()
-                                .isConnected(newRanges.get(chromatogram))) {
-                            System.out.println("TRUE!");
+                                .isConnected(newRanges.get(chromatogram))){//newRanges.get(chromatogram))) {
+//                            System.out.println("TRUE!");
                             lists.get(chromatogram).add(d);
-
-                            mergedd.add(d);
+                            
+                            mergedNotToAdd.add(d);
+                            mergedNotToAdd.add(chromatogram); //original is now merged as well, no longer needed.
+                            System.out.println("OLD:"+newRanges.get(chromatogram));
                             newRanges.put(chromatogram,
                                     d.getRawDataPointsMZRange()
                                             .span(newRanges.get(chromatogram)));
-                            System.out.println(newRanges.get(chromatogram));
+                            another = buildingChromatograms.iterator();
+                            System.out.println("NEW: " +newRanges.get(chromatogram));
+//                            System.out.println(newRanges.get(chromatogram));
                             // System.out.prHintln(d.getRawDataPointsMZRange() +
                             // " "
                             // + chromatogram.getRawDataPointsMZRange());
@@ -230,22 +235,30 @@ public class DIHighestDataPointConnector {
 
         ArrayList<DIChromatogram> merged = new ArrayList<DIChromatogram>();
 
-        for (DIChromatogram di : lists.keySet()) {
+        DIChromatogram[] keys = lists.keySet().toArray(new DIChromatogram[0]);
+        Arrays.sort(keys);
+        for (DIChromatogram di : keys) {
             ArrayList<DIChromatogram> list = lists.get(di);
 
-            DIChromatogram merge = di;
-            for (DIChromatogram toMerge : list) {
-
-                System.out.println("Merging " + toMerge + " to " + di);
-
-                merge = DIChromatogram.merge(di, toMerge);
-
+            DIChromatogram combined = di; //if nothing to combine, use the original
+            if(list.size()>0){
+            	System.out.println("Merging: " +list.size());
+            	merged.add(di);
+	            for (DIChromatogram toMerge : list) {
+	
+	                System.out.println("Merging " + toMerge + " to " + combined);
+	
+	                combined = DIChromatogram.merge(combined, toMerge);
+	                combined.finishChromatogram();
+	
+	                System.out.println("Result: " +combined);
+	            }
             }
-            merged.add(merge);
+//            if (!mergedNotToAdd.contains(combined)) {
+                merged.add(combined);
+//            }
         }
-        for (DIChromatogram di : merged) {
-            di.finishChromatogram();
-        }
+        
 
         // All remaining chromatograms are good, so we can return them
         DIChromatogram[] chromatograms = merged.toArray(new DIChromatogram[0]);

@@ -345,7 +345,6 @@ public class TICDataSet extends AbstractXYZDataset implements Task {
     }
 
     private void calculateValues() {
-        System.out.println("heyi'm here!");
 
         // Determine plot type (now done from constructor).
         final TICPlotType plotType = this.plotType;
