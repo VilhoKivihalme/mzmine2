@@ -19,6 +19,7 @@
 
 package net.sf.mzmine.modules.masslistmethods.dichromatogrambuilder;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -87,6 +88,8 @@ public class DIChromatogram implements Feature, Comparable<DIChromatogram> {
 
     private double avgHeight;
 
+    private ArrayList<Double> originalIntensities= new ArrayList<Double>();
+    
     public void test() {
         for (Integer d : dataPointsMap.keySet()) {
             System.out.println("Datapoints:" + d + " " + dataPointsMap.get(d));
@@ -360,9 +363,31 @@ public class DIChromatogram implements Feature, Comparable<DIChromatogram> {
         		System.out.println("ERROR, two same scan numbers: " + i);
         	}
         }
+        if(di1.isMerged()){
+        	merged.addOriginalMerges(di1.getOriginalMerges());
+        }else{
+        	merged.addOriginalMerge(di1.mz);
+        }
+        if(di2.isMerged()){
+        	merged.addOriginalMerges(di2.getOriginalMerges());
+        }else{
+        	merged.addOriginalMerge(di2.mz);
+        }
         return merged;
     }
 
+    private boolean isMerged(){
+    	return originalIntensities.size()!=0;
+    }
+    public ArrayList<Double> getOriginalMerges(){
+    	return originalIntensities;
+    }
+    private void addOriginalMerges(ArrayList<Double> d){
+    	originalIntensities.addAll(d);
+    }
+    private void addOriginalMerge(double d){
+    	originalIntensities.add(d);
+    }
     public int getCharge() {
         return charge;
     }

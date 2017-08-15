@@ -267,7 +267,7 @@ public final class MZmineCore {
      */
     public static void batchTest() {
         System.out.println("entering batch mode test");
-        File batchFile = new File("C:/Users/Vilho/Desktop/batchmode2.xml");
+        File batchFile = new File("C:/Users/Vilho/Desktop/batchmode3.xml");
         if ((!batchFile.exists()) || (!batchFile.canRead())) {
             logger.severe("Cannot read batch file " + batchFile);
             System.out.println("exiting");

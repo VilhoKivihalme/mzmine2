@@ -28,6 +28,7 @@ import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.Feature;
 import net.sf.mzmine.datamodel.MZmineProject;
 import net.sf.mzmine.datamodel.MassList;
+import net.sf.mzmine.datamodel.PeakListRow;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.Scan;
 import net.sf.mzmine.datamodel.impl.SimplePeakList;
@@ -203,16 +204,17 @@ public class DIChromatogramBuilderTask extends AbstractTask {
                 new PeakSorter(SortingProperty.MZ, SortingDirection.Ascending));
         
         //reset peakList, because we build another
-        newPeakList = new SimplePeakList(dataFile + " " + suffix+" merged", dataFile);
+        SimplePeakList mergedPeakList = new SimplePeakList(dataFile + " " + suffix+" merged", dataFile);
         newPeakID=1;
         
         for (Feature finishedPeak : merged) {
             SimplePeakListRow newRow = new SimplePeakListRow(newPeakID);
             newPeakID++;
             newRow.addPeak(dataFile, finishedPeak);
-            newPeakList.addRow(newRow);
+            newRow.setComment(getComment(finishedPeak));
+            mergedPeakList.addRow(newRow);
         }
-        project.addPeakList(newPeakList);
+        project.addPeakList(mergedPeakList);
 
         // Add quality parameters to peaks
         //QualityParameters.calculateQualityParameters(newPeakList);
@@ -221,6 +223,28 @@ public class DIChromatogramBuilderTask extends AbstractTask {
 
         logger.info("Finished chromatogram builder on " + dataFile);
 
+    }
+    
+    public String getComment(Feature f){
+    	DIChromatogram di = (DIChromatogram)f; //unsafe conversion
+    	ArrayList<Double> originals = di.getOriginalMerges();
+    	PeakListRow[] plr = newPeakList.getRows();
+    	ArrayList<Integer> mergs = new ArrayList<Integer>();
+    	for(Double d : originals){
+    		for (PeakListRow row : plr){
+
+//				System.out.println(row.getAverageMZ()+ " "+d);
+    			if(row.getAverageMZ()==d){
+    				mergs.add(row.getID());
+    			}
+    		}
+    	}
+    String comment="";
+    	Collections.sort(mergs);
+    	for(Integer i : mergs){
+    		comment+=i+",";
+    	}
+    	return comment;
     }
 
 }
