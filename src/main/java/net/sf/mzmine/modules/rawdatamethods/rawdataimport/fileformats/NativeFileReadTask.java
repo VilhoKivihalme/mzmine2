@@ -23,11 +23,15 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.Range;
 
 import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.MZmineProject;
@@ -43,11 +47,6 @@ import net.sf.mzmine.taskcontrol.TaskStatus;
 import net.sf.mzmine.util.ExceptionUtils;
 import net.sf.mzmine.util.ScanUtils;
 import net.sf.mzmine.util.TextUtils;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Range;
-
-import io.github.msdk.datamodel.files.FileType;
 
 /**
  * This module binds spawns a separate process that dumps the native format's
@@ -128,6 +127,7 @@ public class NativeFileReadTask extends AbstractTask {
             cmdLine = new String[] { "wine", rawDumpPath, file.getPath() };
         }
 
+        System.out.println(rawDumpPath);
         try {
 
             // Create a separate process and execute RAWdump.exe
@@ -197,13 +197,10 @@ public class NativeFileReadTask extends AbstractTask {
         byte byteBuffer[] = new byte[100000];
         double mzValuesBuffer[] = new double[10000];
         double intensityValuesBuffer[] = new double[10000];
-
         while ((line = TextUtils.readLineFromStream(dumpStream)) != null) {
-
             if (isCanceled()) {
                 return;
             }
-
             if (line.startsWith("ERROR: ")) {
                 throw (new IOException(line.substring("ERROR: ".length())));
             }
@@ -383,7 +380,6 @@ public class NativeFileReadTask extends AbstractTask {
             }
 
         }
-
     }
 
     @Override

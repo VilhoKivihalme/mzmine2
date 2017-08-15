@@ -19,6 +19,9 @@
 
 package net.sf.mzmine.modules.masslistmethods.dichromatogrambuilder;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,12 +44,12 @@ public class DIHighestDataPointConnector {
     private final double minimumTimeSpan, minimumHeight;
     private final RawDataFile dataFile;
     private final int allScanNumbers[];
-
+    private DIChromatogram[] mergedCromatograms;
     // Mapping of last data point m/z --> chromatogram
     private Set<DIChromatogram> buildingChromatograms;
-
+    private final int minPeakCount;
     public DIHighestDataPointConnector(RawDataFile dataFile,
-            int allScanNumbers[], double minimumTimeSpan, double minimumHeight,
+            int allScanNumbers[], double minimumTimeSpan, double minimumHeight,int minPeakCount,
             MZTolerance mzTolerance) {
 
         this.mzTolerance = mzTolerance;
@@ -54,19 +57,23 @@ public class DIHighestDataPointConnector {
         this.minimumTimeSpan = minimumTimeSpan;
         this.dataFile = dataFile;
         this.allScanNumbers = allScanNumbers;
+        this.minPeakCount = minPeakCount;
         // for (int i = 0; i < allScanNumbers.length; i++) {
         // System.out.println(allScanNumbers[i]);
         // }
-
         // We use LinkedHashSet to maintain a reproducible ordering. If we use
         // plain HashSet, the resulting peak list row IDs will have different
         // order every time the method is invoked.
         buildingChromatograms = new LinkedHashSet<DIChromatogram>();
-
+        points = new DataPoint[allScanNumbers.length][];
     }
 
+    DataPoint[][] points; 
+    int pointsIndex =0;
     public void addScan(int scanNumber, DataPoint mzValues[]) {
-
+    	points[pointsIndex]=mzValues;
+    	pointsIndex++;
+    	System.out.println("Added " + mzValues.length+" values");
         // System.out.println("Added scan " + scanNumber);
         // Sort m/z peaks by descending intensity
         Arrays.sort(mzValues, new DataPointSorter(SortingProperty.Intensity,
@@ -83,6 +90,8 @@ public class DIHighestDataPointConnector {
             // System.out.println("CURRENT
             // SIZE:"+connectedChromatograms.size()+" "
             // +buildingChromatograms.size());
+            double closest=Double.POSITIVE_INFINITY;
+            
             for (DIChromatogram testChrom : buildingChromatograms) {
                 // System.out.println(testChrom);
 
@@ -90,6 +99,10 @@ public class DIHighestDataPointConnector {
                 Range<Double> toleranceRange = mzTolerance
                         .getToleranceRange(lastMzPeak.getMZ());
 
+                
+                /*
+                */
+   //*/
                 if (toleranceRange.contains(mzPeak.getMZ())) {
                     if ((bestChromatogram == null) || (testChrom.getLastMzPeak()
                             .getIntensity() > bestChromatogram.getLastMzPeak()
@@ -98,7 +111,25 @@ public class DIHighestDataPointConnector {
 
                     }
                 }
+                
+   /*/
+                if (toleranceRange.contains(mzPeak.getMZ())) {
+                	
+                	
+                    if ((bestChromatogram == null) || Math.abs( (testChrom.getLastMzPeak()
+                            .getMZ() - bestChromatogram.getLastMzPeak()
+                                    .getMZ()))<closest) {
+                    	if(bestChromatogram!=null){
+                        closest = Math.abs( (testChrom.getLastMzPeak()
+                                .getMZ() - bestChromatogram.getLastMzPeak()
+                                .getMZ()));
+                    	}
+                        bestChromatogram = testChrom;
+             
 
+                    }
+                }
+//*/
             }
 
             // If we found best chromatogram, check if it is already connected.
@@ -155,7 +186,30 @@ public class DIHighestDataPointConnector {
     }
 
     public DIChromatogram[] finishChromatograms() {
+    	/*int dataPointsChecked=0;
+    	int total=0;
+    	int max=0;
+    	for(int i =0;i<points.length-1;i++){
 
+			  System.out.println(points[i].length + " "+points[i+1].length);
+    		for(int j = 0;j<points[i].length;j++){
+    			int matches=0;
+				  Range<Double> toleranceRange = mzTolerance
+	                        .getToleranceRange(points[i][j].getMZ());
+    			for(int k=0;k<points[i+1].length;k++){
+    				if(toleranceRange.contains(points[i+1][k].getMZ())){
+    					matches++;
+    				}
+    			}
+    			if(matches>max){
+    				max=matches;
+    			}
+    			total+=matches;
+    			dataPointsChecked++;
+    		}
+    	}
+    	System.out.println("Out of " + dataPointsChecked + " there was average of "+(total/dataPointsChecked) +" possible connections for each (max: " + max+")");
+        */
         // Iterate through current chromatograms and remove those which do not
         // contain any committed segment nor long-enough building segment
 
@@ -187,40 +241,94 @@ public class DIHighestDataPointConnector {
             // chromIterator.remove();
 
         }
+ 
+        
+        DIChromatogram[] chromatograms=buildingChromatograms.toArray(new DIChromatogram[0]);
+      
 
-        HashMap<DIChromatogram, ArrayList<DIChromatogram>> lists = new HashMap<DIChromatogram, ArrayList<DIChromatogram>>();
-        HashMap<DIChromatogram, Range<Double>> newRanges = new HashMap<DIChromatogram, Range<Double>>();
-        LinkedHashSet<DIChromatogram> mergedNotToAdd = new LinkedHashSet<DIChromatogram>();
-        chromIterator = buildingChromatograms.iterator();
+        mergedCromatograms= mergeChromatograms();
+       
+        return chromatograms;
+    }
 
+    public DIChromatogram[] getMergedChromatograms(){
+    	return mergedCromatograms;
+    }
+    
+	private DIChromatogram[] mergeChromatograms() {
+		Iterator<DIChromatogram> chromIterator;
+		//set of lists of chromatograms to be merged
+		HashMap<DIChromatogram, ArrayList<DIChromatogram>> lists=null;
+        //set of ranges for certain chromatogram
+		HashMap<DIChromatogram, Range<Double>> newRanges = null;
+		//list of such cromatograms that should not be added because they were merged
+		LinkedHashSet<DIChromatogram> mergedNotToAdd =null;
+		System.out.println("Starting the merging process..");
+		Set<DIChromatogram> merged=null;
+        boolean moreMerging=true;
+        boolean firstRound=true;
+//        while(moreMerging){ //thisshould not be needed and makes the process take really long.
+        
+        	moreMerging=false; //assume the merging process is done.
+        	
+        	lists = new HashMap<DIChromatogram, ArrayList<DIChromatogram>>();
+        	newRanges = new HashMap<DIChromatogram, Range<Double>>();
+        	mergedNotToAdd=new LinkedHashSet<DIChromatogram>();
+			if(firstRound){
+			    chromIterator = buildingChromatograms.iterator();
+			}else{
+				chromIterator=merged.iterator();
+			}
+			int total = buildingChromatograms.size();
+			int current = 0;
         // iterate all chromatograms
         while (chromIterator.hasNext()) {
+        	current++;
+        	if(current%100==0){
+        		System.out.println("merged:"+current+"/"+total);
+        	}
             DIChromatogram chromatogram = chromIterator.next();
 
             // init new chromatogram list
             lists.put(chromatogram, new ArrayList<DIChromatogram>());
             newRanges.put(chromatogram, chromatogram.getRawDataPointsMZRange());
             // go through all others
-            Iterator<DIChromatogram> another = buildingChromatograms.iterator();
+            Iterator<DIChromatogram> another;
+        	if(firstRound){
+        		another = buildingChromatograms.iterator();
+			}else{
+				another=merged.iterator();
+			}
             while (another.hasNext()) {
             	DIChromatogram d = another.next();
+            	
                 // do not test current to itself
                 if (d != chromatogram) {
-
-                    if (!mergedNotToAdd.contains(d)) {//if this has not been merged somewhere
+                	
+                	//if this has not been merged somewhere
+                    if (!mergedNotToAdd.contains(d)) {
+                    	
+                    	//see if these ranges intersect
                         if (d.getRawDataPointsMZRange()
-                                .isConnected(newRanges.get(chromatogram))){//newRanges.get(chromatogram))) {
-//                            System.out.println("TRUE!");
+                                .isConnected(newRanges.get(chromatogram))){
                             lists.get(chromatogram).add(d);
                             
                             mergedNotToAdd.add(d);
                             mergedNotToAdd.add(chromatogram); //original is now merged as well, no longer needed.
-                            System.out.println("OLD:"+newRanges.get(chromatogram));
+//                            System.out.println("Removing:" +d.getMZ() +" and " +chromatogram.getMZ());
+//                            System.out.println("OLD:"+newRanges.get(chromatogram));
                             newRanges.put(chromatogram,
                                     d.getRawDataPointsMZRange()
                                             .span(newRanges.get(chromatogram)));
-                            another = buildingChromatograms.iterator();
-                            System.out.println("NEW: " +newRanges.get(chromatogram));
+                            
+                            //we need to start iterating from beginning because new range may now enclose others.
+                        
+                            if(firstRound){
+                            	another = buildingChromatograms.iterator();
+		        			}else{
+		        				another=merged.iterator();
+		        			}
+//                            System.out.println("NEW: " +newRanges.get(chromatogram));
 //                            System.out.println(newRanges.get(chromatogram));
                             // System.out.prHintln(d.getRawDataPointsMZRange() +
                             // " "
@@ -232,37 +340,47 @@ public class DIHighestDataPointConnector {
                 }
             }
         }
-
-        ArrayList<DIChromatogram> merged = new ArrayList<DIChromatogram>();
-
+        firstRound=false;
+        merged = new LinkedHashSet<DIChromatogram>();
+        int merges =0;
         DIChromatogram[] keys = lists.keySet().toArray(new DIChromatogram[0]);
         Arrays.sort(keys);
         for (DIChromatogram di : keys) {
             ArrayList<DIChromatogram> list = lists.get(di);
 
             DIChromatogram combined = di; //if nothing to combine, use the original
+            System.out.println(combined +" " +di);
             if(list.size()>0){
-            	System.out.println("Merging: " +list.size());
-            	merged.add(di);
+//            	System.out.println("Merging: " +(list.size()+1));
+            	moreMerging=true;
 	            for (DIChromatogram toMerge : list) {
 	
-	                System.out.println("Merging " + toMerge + " to " + combined);
-	
+//	                System.out.println("Merging " + toMerge + " to " + combined);
+	            	merges++;
 	                combined = DIChromatogram.merge(combined, toMerge);
 	                combined.finishChromatogram();
-	
-	                System.out.println("Result: " +combined);
+	                
+//	                System.out.println("Result: " +combined);
 	            }
             }
-//            if (!mergedNotToAdd.contains(combined)) {
+            if (!mergedNotToAdd.contains(combined)) {
                 merged.add(combined);
-//            }
+            }
         }
-        
+        System.out.println("merges: "+merges);
+//        }
 
         // All remaining chromatograms are good, so we can return them
-        DIChromatogram[] chromatograms = merged.toArray(new DIChromatogram[0]);
-        return chromatograms;
-    }
+        
+        //TODO: now strip the ones that do not have enough peaks.
+        ArrayList<DIChromatogram> all = new ArrayList<DIChromatogram>(); 
+       for(DIChromatogram merg : merged){
+    	   if(merg.getAllDatapoints().size()<minPeakCount){
+    		   all.add(merg);
+    	   }
+       }
+       merged.removeAll(all);
+       return merged.toArray(new DIChromatogram[0]);
+	}
 
 }

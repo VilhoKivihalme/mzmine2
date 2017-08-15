@@ -19,7 +19,9 @@
 
 package net.sf.mzmine.modules.masslistmethods.dichromatogrambuilder;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.logging.Logger;
 
 import net.sf.mzmine.datamodel.DataPoint;
@@ -30,7 +32,6 @@ import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.Scan;
 import net.sf.mzmine.datamodel.impl.SimplePeakList;
 import net.sf.mzmine.datamodel.impl.SimplePeakListRow;
-import net.sf.mzmine.modules.peaklistmethods.qualityparameters.QualityParameters;
 import net.sf.mzmine.parameters.ParameterSet;
 import net.sf.mzmine.parameters.parametertypes.selectors.ScanSelection;
 import net.sf.mzmine.parameters.parametertypes.tolerances.MZTolerance;
@@ -48,7 +49,7 @@ public class DIChromatogramBuilderTask extends AbstractTask {
     private RawDataFile dataFile;
 
     // scan counter
-    private int processedScans = 0, totalScans;
+    private int processedScans = 0, totalScans,minPeakCount;
     private ScanSelection scanSelection;
     private int newPeakID = 1;
     private Scan[] scans;
@@ -89,7 +90,7 @@ public class DIChromatogramBuilderTask extends AbstractTask {
         this.suffix = parameters
                 .getParameter(DIChromatogramBuilderParameters.suffix)
                 .getValue();
-
+        this.minPeakCount = parameters.getParameter(DIChromatogramBuilderParameters.minimumDataPoints).getValue();
     }
 
     /**
@@ -147,7 +148,7 @@ public class DIChromatogramBuilderTask extends AbstractTask {
 
         DIChromatogram[] chromatograms;
         DIHighestDataPointConnector massConnector = new DIHighestDataPointConnector(
-                dataFile, allScanNumbers, minimumTimeSpan, minimumHeight,
+                dataFile, allScanNumbers, minimumTimeSpan, minimumHeight,minPeakCount,
                 mzTolerance);
 
         for (Scan scan : scans) {
@@ -193,6 +194,24 @@ public class DIChromatogramBuilderTask extends AbstractTask {
         }
 
         // Add new peaklist to the project
+        project.addPeakList(newPeakList);
+
+        
+        DIChromatogram[] merged = massConnector.getMergedChromatograms();
+        // Sort the merged chromatograms by m/z
+        Arrays.sort(merged,
+                new PeakSorter(SortingProperty.MZ, SortingDirection.Ascending));
+        
+        //reset peakList, because we build another
+        newPeakList = new SimplePeakList(dataFile + " " + suffix+" merged", dataFile);
+        newPeakID=1;
+        
+        for (Feature finishedPeak : merged) {
+            SimplePeakListRow newRow = new SimplePeakListRow(newPeakID);
+            newPeakID++;
+            newRow.addPeak(dataFile, finishedPeak);
+            newPeakList.addRow(newRow);
+        }
         project.addPeakList(newPeakList);
 
         // Add quality parameters to peaks

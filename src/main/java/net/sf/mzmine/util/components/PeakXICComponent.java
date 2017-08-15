@@ -81,7 +81,6 @@ public class PeakXICComponent extends JComponent {
     }
 
     public void paint(Graphics g) {
-    	
         super.paint(g);
         // use Graphics2D for antialiasing
         Graphics2D g2 = (Graphics2D) g;

@@ -23,6 +23,7 @@ import net.sf.mzmine.main.MZmineCore;
 import net.sf.mzmine.parameters.Parameter;
 import net.sf.mzmine.parameters.impl.SimpleParameterSet;
 import net.sf.mzmine.parameters.parametertypes.DoubleParameter;
+import net.sf.mzmine.parameters.parametertypes.IntegerParameter;
 import net.sf.mzmine.parameters.parametertypes.MassListParameter;
 import net.sf.mzmine.parameters.parametertypes.StringParameter;
 import net.sf.mzmine.parameters.parametertypes.selectors.RawDataFilesParameter;
@@ -45,7 +46,10 @@ public class DIChromatogramBuilderParameters extends SimpleParameterSet {
                     + "The optimal value depends on the chromatography system setup. The best way to set this parameter\n"
                     + "is by studying the raw data and determining what is the typical time span of chromatographic peaks.",
             MZmineCore.getConfiguration().getRTFormat());
-
+    
+    public static final IntegerParameter minimumDataPoints = new IntegerParameter("Min peak count","blahblah tooltip",10);
+    
+    
     public static final DoubleParameter minimumHeight = new DoubleParameter(
             "Min height",
             "Minimum intensity of the highest data point in the chromatogram. If chromatogram height is below this level, it is discarded.",
@@ -58,7 +62,7 @@ public class DIChromatogramBuilderParameters extends SimpleParameterSet {
 
     public DIChromatogramBuilderParameters() {
         super(new Parameter[] { dataFiles, scanSelection, massList,
-                minimumTimeSpan, minimumHeight, mzTolerance, suffix });
+                minimumTimeSpan,minimumDataPoints, minimumHeight, mzTolerance, suffix });
     }
 
 }

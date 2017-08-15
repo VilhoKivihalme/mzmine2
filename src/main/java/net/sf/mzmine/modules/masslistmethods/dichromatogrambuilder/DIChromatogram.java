@@ -150,6 +150,7 @@ public class DIChromatogram implements Feature, Comparable<DIChromatogram> {
      */
     public double getMZ() {
         return mz;
+//    	return 1000;
     }
 
     /**
@@ -225,7 +226,9 @@ public class DIChromatogram implements Feature, Comparable<DIChromatogram> {
         for (int i = 0; i < allScanNumbers.length; i++) {
             allMzValues[i] = dataPointsMap.get(allScanNumbers[i]).getMZ();
         }
-        mz = MathUtils.calcQuantile(allMzValues, 0.5f);
+        
+        //we want actual average, not quantiles
+      //mz = MathUtils.calcQuantile(allMzValues, 0.5f);
 
         // Update raw data point ranges, height, rt and representative scan
         height = Double.MIN_VALUE;
@@ -340,6 +343,7 @@ public class DIChromatogram implements Feature, Comparable<DIChromatogram> {
     }
 
     public static DIChromatogram merge(DIChromatogram di1, DIChromatogram di2) {
+    	
         DIChromatogram merged = new DIChromatogram(di1.dataFile,
                 di1.scanNumbers);
         

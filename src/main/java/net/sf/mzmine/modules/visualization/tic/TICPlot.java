@@ -511,6 +511,7 @@ public class TICPlot extends ChartPanel implements MouseWheelListener {
 
 	// Let the parent handle the event (selection etc.)
 	super.mouseClicked(event);
+	System.out.println("clickity clickity");
 
 	// Request focus to receive key events.
 	requestFocus();

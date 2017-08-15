@@ -161,6 +161,7 @@ public class TICVisualizerWindow extends JFrame implements ActionListener {
         ticPlot.addChartMouseListener(new ChartMouseListener() {
             @Override
             public void chartMouseClicked(ChartMouseEvent event) {
+            	System.out.println("click click");
                 ChartEntity entity = event.getEntity();
                 XYPlot plot = (XYPlot) ticPlot.getChart().getPlot();
 
@@ -168,6 +169,7 @@ public class TICVisualizerWindow extends JFrame implements ActionListener {
                         && entity instanceof LegendItemEntity
                         && plot.getRenderer().getClass().getName()
                                 .indexOf(".TICPlotRenderer") > -1) {
+                	System.out.println("entity= " + entity.getClass());
                     LegendItemEntity itemEntity = (LegendItemEntity) entity;
                     XYLineAndShapeRenderer rendererAll = (XYLineAndShapeRenderer) plot
                             .getRenderer();
@@ -196,6 +198,8 @@ public class TICVisualizerWindow extends JFrame implements ActionListener {
                     }
                     renderer.setBaseLegendTextFont(font);
                     renderer.setSeriesStroke(0, stroke);
+                }else{
+                	System.out.println("null");
                 }
             }
 
@@ -402,6 +406,7 @@ public class TICVisualizerWindow extends JFrame implements ActionListener {
                 double mz = 0;
                 if (plotType == TICPlotType.BASEPEAK) {
                     mz = (double) dataSet.getZValue(0, index);
+                    System.out.println(mz);
                 }
                 CursorPosition pos = new CursorPosition(selectedRT, mz,
                         selectedIT, dataSet.getDataFile(),

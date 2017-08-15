@@ -205,6 +205,7 @@ public class RawDataImportModule implements MZmineProcessingModule {
             MZmineProject project, File fileName,
             RawDataFileWriter newMZmineFile) {
         Task newTask = null;
+        System.out.println("Thermo raw:"+ fileType);
         switch (fileType) {
         case MZDATA:
             newTask = new MzDataReadTask(project, fileName, newMZmineFile);
